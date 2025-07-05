@@ -1,0 +1,21 @@
+MVP
+🐾 Pet states: hunger, mood, energy, attention
+
+📅 Daily planner/reminder: schedule tasks or appointments
+
+💬 Basic interaction: respond to voice commands and typed messages
+
+⏰ Time-based events: pet gets hungry, tired, or reminds you about tasks
+
+
+CONTINUING
+
+🗣️ Voice input/output (using speech_recognition and pyttsx3)
+
+🧾 Task syncing with Google Calendar or Todoist
+
+💤 Pet sleeps when idle
+
+🛍️ In-game currency/shop for feeding/training your pet
+
+🧬 Memory system: pet remembers your habits and adapts
