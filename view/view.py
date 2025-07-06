@@ -12,7 +12,10 @@ class view:
         self.scale = 8
         self.isChatopen = False
         self.chat_input = ""
-        self.chat_log = []  
+        self.chat_log = []
+        self.chat_panel_height = self.window_height // 3
+        self.dragging_chat_handle = False
+        self.chat_handle_rect = None
     
     def window_resize(self, new_width, new_height):
         """Resize the window and update the view."""
@@ -99,10 +102,20 @@ class view:
         screen.blit(help_surf, help_rect)
         
         if self.isChatopen:
-            panel_height = self.window_height/3
+            # Use self.chat_panel_height for resizable panel
+            min_panel_height = 80
+            max_panel_height = self.window_height - 100
+            self.chat_panel_height = max(min_panel_height, min(self.chat_panel_height, max_panel_height))
+            panel_height = self.chat_panel_height
             panel_rect = pygame.Rect(0, self.window_height - panel_height, self.window_width, panel_height)
             pygame.draw.rect(screen, (230, 230, 250), panel_rect)
             pygame.draw.rect(screen, (180, 180, 220), panel_rect, 2)
+
+            # Draw draggable handle
+            handle_height = 8
+            handle_rect = pygame.Rect(0, self.window_height - panel_height - handle_height, self.window_width, handle_height)
+            pygame.draw.rect(screen, (180, 180, 220), handle_rect)
+            self.chat_handle_rect = handle_rect
 
             # Draw chat log (last 5 messages)
             font = pygame.font.SysFont('Segoe UI', 18)
@@ -118,6 +131,8 @@ class view:
             pygame.draw.rect(screen, (180, 180, 220), input_rect, 2)
             input_surf = font.render(self.chat_input, True, (0, 0, 0))
             screen.blit(input_surf, (input_rect.x + 5, input_rect.y + 5))
+            
+        
 
 
         pygame.display.flip()

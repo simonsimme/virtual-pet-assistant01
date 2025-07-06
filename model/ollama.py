@@ -49,7 +49,7 @@ class LLM:
         #print(response.status_code, response.text)
         return response.json()["response"].strip()
     
-    def stop_ollama():
+    def stop_ollama(self):
         try:
             subprocess.Popen(["ollama", "stop"])
         except Exception as e:

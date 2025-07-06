@@ -62,28 +62,26 @@ def main():
                 windowwidth, windowheight = event.w, event.h
                 screen = pygame.display.set_mode((windowwidth, windowheight), pygame.RESIZABLE)
                 game_view.window_resize(windowwidth, windowheight)
-            if game_view.isChatopen:
-                
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:
-                        if game_view.chat_input.strip():
-                            game_view.chat_log.append(("You", game_view.chat_input))
-                            prev_log = ""
-                            if len(game_view.chat_log) > 1:
-                                prev_sender, prev_msg = game_view.chat_log[-2]
-                                prev_log = f"{prev_sender}: {prev_msg}"
+            if game_view.isChatopen and event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    if game_view.chat_input.strip():
+                        game_view.chat_log.append(("You", game_view.chat_input))
+                        prev_log = ""
+                        if len(game_view.chat_log) > 1:
+                            prev_sender, prev_msg = game_view.chat_log[-2]
+                            prev_log = f"{prev_sender}: {prev_msg}"
 
-                            def chat_llm_thread():
-                                speech_assistant.handle_response_text(
-                                    f"PREVIOUS CONVERSATION [{prev_log}] NEW USER COMMAND [{game_view.chat_input}]"
-                                )
+                        def chat_llm_thread():
+                            speech_assistant.handle_response_text(
+                                f"PREVIOUS CONVERSATION [{prev_log}] NEW USER COMMAND [{game_view.chat_input}]"
+                            )
 
-                            threading.Thread(target=chat_llm_thread, daemon=True).start()
-                            game_view.chat_input = ""
-                    elif event.key == pygame.K_BACKSPACE:
-                        game_view.chat_input = game_view.chat_input[:-1]
-                    elif event.unicode and event.unicode.isprintable():
-                        game_view.chat_input += event.unicode
+                        threading.Thread(target=chat_llm_thread, daemon=True).start()
+                        game_view.chat_input = ""
+                elif event.key == pygame.K_BACKSPACE:
+                    game_view.chat_input = game_view.chat_input[:-1]
+                elif event.unicode and event.unicode.isprintable():
+                    game_view.chat_input += event.unicode
             else:
                 controller.handle_event(event)
             #my_pet.play_idle(screen, (game_view.center_x, game_view.center_y), dt)
@@ -100,4 +98,5 @@ def main():
             #my_pet.idle_timer = 0
            # print("here")
         pygame.display.flip()
+    speech_assistant.exit()
     pygame.quit()

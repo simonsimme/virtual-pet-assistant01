@@ -19,11 +19,30 @@ class PetController:
     def handle_event(self, event):
         if event.type == pygame.QUIT:
             return "quit"
-        elif event.type == pygame.MOUSEBUTTONDOWN:
+
+        # --- Chat panel handle drag logic ---
+        if self.view.isChatopen:
+            # Handle dragging the chat panel handle to resize
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.view.chat_handle_rect and self.view.chat_handle_rect.collidepoint(event.pos):
+                    self.view.dragging_chat_handle = True
+                    self.view._drag_offset = event.pos[1] - self.view.chat_handle_rect.y
+            elif event.type == pygame.MOUSEBUTTONUP:
+                self.view.dragging_chat_handle = False
+            elif event.type == pygame.MOUSEMOTION:
+                if getattr(self.view, 'dragging_chat_handle', False):
+                    new_height = self.view.window_height - (event.pos[1] + getattr(self.view, '_drag_offset', 0))
+                    min_panel_height = 80
+                    max_panel_height = self.view.window_height - 100
+                    self.view.chat_panel_height = max(min_panel_height, min(new_height, max_panel_height))
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1 and self.buttons["feed"][1].collidepoint(event.pos):
                 self.pet.feed(5)
             elif event.button == 1 and self.buttons["keyboard"][1].collidepoint(event.pos):
                 self.view.isChatopen = not self.view.isChatopen
+                #print("Chat panel toggled:", self.view.isChatopen)
+
         return None
 
     def add_schedule(self, string_task , start_time, duration_minutes):

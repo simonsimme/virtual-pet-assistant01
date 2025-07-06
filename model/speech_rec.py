@@ -23,6 +23,8 @@ class SpeechAssistant:
         else:
             self.engine.say(text)
             self.engine.runAndWait()
+    def exit(self):
+        self.llm.stop_ollama()
 
     def __init__(self, screen, game_view, pet_name, wake_word, language="en-US"):
         self.wake_word = wake_word
