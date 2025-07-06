@@ -210,7 +210,7 @@ class SpeechAssistant:
                     self.say("Taking selfie.")
                     camera = Camera()
                     frame = camera.take_selfie()
-                    self.game_view.show_frame(frame, self.screen)
+                    self.game_view.show_frame(frame)
                 elif 108 == code:
                     self.say("sorry, i didn't understand that")
                 elif 109 == code:
