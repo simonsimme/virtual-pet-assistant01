@@ -10,12 +10,43 @@ MVP
 
 CONTINUING
 
-🗣️ Voice input/output (using speech_recognition and pyttsx3)
+tamagichi type game loop
 
-🧾 Task syncing with Google Calendar or Todoist
+Player activities:
+play
+feed 
+rest / sleep (restore energy)
+bathe / wash (improves cleanliness and mood)
+train / learn trick (boosts mood, unlocks new animations)
+walk / explore (improves mood and health)
+visit vet (restores health if sick)
+dress up / change outfit (cosmetic, boosts mood, unlock more outsits when exploring)
+take selfie takes a selfie of you and your pet (fun, can share or save)
+give medicine (if pet is sick)
+brush / groom (improves cleanliness and mood)
+celebrate birthday (special event, boosts all stats)
+play mini-game (boosts mood, energy, or attention)
+give treat (small hunger/mood boost)
+decorate room (cosmetic, boosts mood)
+listen to music (pet dances, boosts mood)
 
-💤 Pet sleeps when idle
 
-🛍️ In-game currency/shop for feeding/training your pet
 
-🧬 Memory system: pet remembers your habits and adapts
+
+
+1. Time-Based State Decay
+Decrease hunger, energy, and mood at regular intervals (e.g., every minute).
+If hunger or energy gets too low, decrease health.
+If mood is low for a long time, decrease health or attention.
+2. User Interactions
+Let the user feed, play with, or let the pet rest to restore states.
+Add simple mini-games or activities to boost mood or energy.
+3. Pet Reactions
+Show different animations or messages based on the pet’s current state (happy, sad, hungry, tired, sick).
+If the pet is neglected for too long, it could "run away" or "get sick" (add consequences).
+4. Reminders and Notifications
+Remind the user to take care of the pet if states are low.
+Use the chat or voice to notify the user.
+5. Persistence
+Save the pet’s state to a file so it persists between sessions.
+When the app starts, load the last state and calculate how much time has passed to update the pet accordingly.
