@@ -45,6 +45,9 @@ class SpeechAssistant:
             return False
         #print(f"Say '{self.wake_word}' to wake the assistant.")
         while True:
+            if self.game_view.isChatopen:
+                return False
+            
             try:
                 with self.mic as source:
                     self.recognizer.adjust_for_ambient_noise(source)
@@ -125,7 +128,7 @@ class SpeechAssistant:
 
     
     def handle_response_text(self, user_command):
-                response = self.llm.ask_ollama( "THIS IS THE CURRENT TIME ["+ datetime.datetime.now().isoformat() + "]" + user_command)
+                response = self.llm.ask_ollama( "TODAYS DAY AND TIME FOR THE USER: ["+ datetime.datetime.now().isoformat() + "]" + user_command)
                 code = int(response[:5].replace("[", "").replace("]", ""))
                 response = response[5:]
                 print("LLM Response:", response)
@@ -133,22 +136,16 @@ class SpeechAssistant:
                 if code == 100:
                     # Extract event info from the full command
                     parts = response.split(",")
-                    title = parts[0].strip() if len(parts) > 0 else ""
-                    if len(parts) == 2 and "T" in parts[1]:
-                        # Handle ISO 8601 combined date and time
-                        dt = dateparser.parse(parts[1].strip())
-                        date_str = dt.strftime("%Y-%m-%d") if dt else ""
-                        time_str = dt.strftime("%H:%M") if dt else ""
-                    else:
-                        date_str = parts[1].strip() if len(parts) > 1 else ""
-                        time_str = parts[2].strip() if len(parts) > 2 else ""
-                    start = dateparser.parse(f"{date_str} {time_str}")
-                    
-                    if title == "EMPTY":
+                    title = parts[0].strip() if len(parts) > 0 and parts[0].lower() != "empty" else None
+                    start_str = parts[1].strip() if len(parts) > 1 and parts[1].lower() != "empty" else None
+                    start = dateparser.parse(start_str) if start_str else None
+                    print(f"Title: {title}, Start: {start}")
+
+                    if title is None:
                         self.say("Could not extract event title. Please try again.")
                         return
-                        
-                    if "EMPTY" == start:
+
+                    if start is None:
                         self.say("Could not understand the date/time.")
                         return
                     
@@ -168,18 +165,13 @@ class SpeechAssistant:
                     googledochelper.create_and_write_doc(title, content)
                     self.say(f"Document '{title}' made")
                 elif 103 == code:
-                    task_title = response.split(",")[0]
-                    notes = response.split(",")[1]
-                    due_date = response.split(",")[2]
-                    
-                    if due_date.lower() == "EMPTY":
-                        due_date = None
-                    else:
-                        try:
-                            due_date = dateparser.parse(due_date).isoformat()
-                        except Exception as e:
-                            self.say("Invalid date format. Task will be added without a due date.")
-                            due_date = None
+                    parts = [p.strip() for p in response.split(",")]
+                    title = parts[0] if len(parts) > 0 else ""
+                    notes = parts[1] if len(parts) > 1 and parts[1].lower() != "empty" else None
+                    due_date_str = parts[2] if len(parts) > 2 and parts[2].lower() != "empty" else None
+                    due_date = dateparser.parse(due_date_str).isoformat() if due_date_str else None
+
+                        
                     service = googleToDo.get_tasks_service()
                     task_lists = service.tasklists().list().execute()
                     default_list_id = task_lists['items'][0]['id']
@@ -233,7 +225,7 @@ class SpeechAssistant:
             return
         continue_running = False
         while True:
-            if self.listen_for_wake_word():
+            if not self.game_view.isChatopen and self.listen_for_wake_word():
                 user_command = self.listen_for_command()
                 response = self.llm.ask_ollama(user_command)
                 code = int(response[:5].replace("[", "").replace("]", ""))

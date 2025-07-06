@@ -63,6 +63,7 @@ def main():
                 screen = pygame.display.set_mode((windowwidth, windowheight), pygame.RESIZABLE)
                 game_view.window_resize(windowwidth, windowheight)
             if game_view.isChatopen:
+                
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         if game_view.chat_input.strip():
@@ -71,14 +72,14 @@ def main():
                             if len(game_view.chat_log) > 1:
                                 prev_sender, prev_msg = game_view.chat_log[-2]
                                 prev_log = f"{prev_sender}: {prev_msg}"
-                            
-                                
-                            speech_assistant.handle_response_text(
-                                f"PREVIOUS CONVERSATION [{prev_log}] NEW USER COMMAND [{game_view.chat_input}]"
-                            )
+
+                            def chat_llm_thread():
+                                speech_assistant.handle_response_text(
+                                    f"PREVIOUS CONVERSATION [{prev_log}] NEW USER COMMAND [{game_view.chat_input}]"
+                                )
+
+                            threading.Thread(target=chat_llm_thread, daemon=True).start()
                             game_view.chat_input = ""
-                            
-                            
                     elif event.key == pygame.K_BACKSPACE:
                         game_view.chat_input = game_view.chat_input[:-1]
                     elif event.unicode and event.unicode.isprintable():

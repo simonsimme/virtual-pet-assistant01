@@ -7,12 +7,12 @@ import os
 class virtual_pet:
     def __init__(self, name, cat_nr=5 ):
         self.name = name
-        self.hunger = 50 # 0 starving, 100 full
+        self.hunger = random.randint(30,60) # 0 starving, 100 full
         self.mood = "Happy"
-        self.moodSlider = 80 # 0 sad, 100 happy
-        self.energy = 50 # 0 exhausted, 100 energized
+        self.moodSlider = random.randint(60,80) # 0 sad, 100 happy
+        self.energy = random.randint(30,70) # 0 exhausted, 100 energized
         self.age = 0
-        self.health = 100
+        self.health = random.randint(50, 100)  # 0 dead, 100 healthy
         self.tasks = []
         self.birth_date = time.strftime("%Y-%m-%d")
         self.last_fed = time.time()
