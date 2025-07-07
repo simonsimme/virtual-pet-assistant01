@@ -13,11 +13,14 @@ class PetController:
             "feed": self.create_button(os.path.join("model","icons", "Monster Part", "Bone.png"), (10, 250)),
             "clean": self.create_button(os.path.join("model","icons", "pixel", "scrub_brush.png"), (130, 250)),
             "explore": self.create_button(os.path.join("model","icons","Misc","Map.png"), (190, 250)),
-            "keyboard": self.create_button(os.path.join("model","icons", "toolbar", "keyboard.png"), (70, 250))
+            "keyboard": self.create_button(os.path.join("model","icons", "toolbar", "keyboard.png"), (70, 250)),
+            "bag": self.create_button(os.path.join("model","icons", "Equipment", "Bag.png"), (310, 250))
         }
         self.cleaning_active = False
         self.clean_icon = pygame.image.load(os.path.join("model","icons", "pixel", "scrub_brush.png")).convert_alpha()
         self.clean_tick = 0;
+        self.isInventoryOpen = False
+        
     def setView(self, view):
         self.view = view
 
@@ -73,6 +76,9 @@ class PetController:
                     self.pet.feed(5)
                 elif event.button == 1 and self.buttons["keyboard"][1].collidepoint(event.pos):
                     self.view.isChatopen = not self.view.isChatopen
+                elif event.button == 1 and self.buttons["bag"][1].collidepoint(event.pos):
+                    self.isInventoryOpen = not self.isInventoryOpen
+                    
                 elif event.button == 1 and self.buttons["clean"][1].collidepoint(event.pos):
                     if self.pet.clean_cooldown >= 100:
                         print('cooldown')
@@ -83,10 +89,13 @@ class PetController:
                     pygame.mouse.set_visible(False)
                 elif event.button == 1 and self.buttons["explore"][1].collidepoint(event.pos):
                     print("explore button clicked")
+                    
                     if self.pet.current_activity == "explore":
                         self.pet.change_activity("idle")
                     else:
                         self.pet.change_activity("explore")
+                        self.pet.start_explore()
+                        
 
         return None
 

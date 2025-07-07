@@ -146,6 +146,71 @@ class view:
             pygame.draw.rect(screen, (180, 180, 220), input_rect, 2)
             input_surf = font.render(self.chat_input, True, (0, 0, 0))
             screen.blit(input_surf, (input_rect.x + 5, input_rect.y + 5))
+        
+        if self.controller.isInventoryOpen:
+            # Draw inventory panel
+            inv_panel_height = self.window_height // 2
+            inv_panel_rect = pygame.Rect(0, self.window_height - inv_panel_height, self.window_width, inv_panel_height)
+            pygame.draw.rect(screen, (230, 230, 250), inv_panel_rect)
+            pygame.draw.rect(screen, (180, 180, 220), inv_panel_rect, 2)
+
+            # Inventory grid settings
+            cols = 5
+            padding = 16
+            icon_size = 48
+            start_x = 24
+            start_y = self.window_height - inv_panel_height + 24
+            font = pygame.font.SysFont('Segoe UI', 16)
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            hovered_item = None
+
+            for idx, item in enumerate(self.pet.inventory):
+                row = idx // cols
+                col = idx % cols
+                x = start_x + col * (icon_size + padding)
+                y = start_y + row * (icon_size + 36)
+                item_rect = pygame.Rect(x, y, icon_size, icon_size)
+
+                # Draw icon background
+                pygame.draw.rect(screen, (255, 255, 255), item_rect, border_radius=8)
+                # Hover effect
+                if item_rect.collidepoint(mouse_x, mouse_y):
+                    pygame.draw.rect(screen, (180, 220, 255), item_rect, 3, border_radius=8)
+                    hovered_item = item
+                else:
+                    pygame.draw.rect(screen, (180, 180, 220), item_rect, 2, border_radius=8)
+
+                # Draw item icon if available
+                if hasattr(item, "icon") and item.icon:
+                    icon_img = pygame.transform.smoothscale(item.icon, (icon_size-8, icon_size-8))
+                    screen.blit(icon_img, (x+4, y+4))
+                else:
+                    # Fallback: draw first letter
+                    letter_surf = font.render(item.name[0], True, (120, 120, 180))
+                    letter_rect = letter_surf.get_rect(center=item_rect.center)
+                    screen.blit(letter_surf, letter_rect)
+
+                # Draw quantity
+                qty_surf = font.render(f"x{getattr(item, 'quantity', 1)}", True, (80, 80, 80))
+                qty_rect = qty_surf.get_rect(bottomright=(x+icon_size-4, y+icon_size-4))
+                screen.blit(qty_surf, qty_rect)
+
+                # Draw item name below icon
+                name_surf = font.render(item.name, True, (50, 50, 80))
+                name_rect = name_surf.get_rect(center=(x+icon_size//2, y+icon_size+12))
+                screen.blit(name_surf, name_rect)
+
+            # Tooltip for hovered item
+            if hovered_item:
+                tooltip_font = pygame.font.SysFont('Segoe UI', 18, bold=True)
+                tooltip_text = getattr(hovered_item, "description", hovered_item.name)
+                tooltip_surf = tooltip_font.render(tooltip_text, True, (30, 30, 60))
+                tooltip_bg = pygame.Surface((tooltip_surf.get_width()+16, tooltip_surf.get_height()+10), pygame.SRCALPHA)
+                tooltip_bg.fill((255, 255, 255, 230))
+                pygame.draw.rect(tooltip_bg, (180, 180, 220), tooltip_bg.get_rect(), 2, border_radius=8)
+                tooltip_pos = (mouse_x + 12, mouse_y - 8)
+                screen.blit(tooltip_bg, tooltip_pos)
+                screen.blit(tooltip_surf, (tooltip_pos[0]+8, tooltip_pos[1]+5))
             
         
 

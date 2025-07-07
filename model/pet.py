@@ -1,3 +1,4 @@
+from model.world_items import world_items
 from . import task
 import random
 import time
@@ -17,6 +18,7 @@ class virtual_pet:
         self.clean_cooldown = 0
         self.tasks = []
         self.birth_date = time.strftime("%Y-%m-%d")
+        self.inventory = [] # List of dicts: {"item": item_object, "quantity": int}
         
         self.animations = {}
         self.current_animation = "NONE"
@@ -246,6 +248,39 @@ class virtual_pet:
         self.energy = max(0, min(self.energy, 100))
         self.clean = max(0, min(self.clean, 100))
         self.health = max(0, min(self.health, 100))
+        
+    def start_explore(self):
+        """Start the explore activity."""
+        if self.energy < 10 or self.hunger < 10:
+            print(f"{self.name} is too tired or hungry to explore.")
+            return
+        item_chance = 100 #percent chance to find an item
+        while self.current_activity == "explore":
+            if random.randint(1, 100) <= item_chance:
+                found_item = random.choice(world_items.food_items)
+                self.add_item_inventory(found_item)
+                print(f"{self.name} found a {found_item.name}!")
+            time.sleep(1)
+
+    def add_item_inventory(self, item, quantity=1):
+        """Add an item and quantity to the pet's inventory."""
+        # Check if item already exists in inventory
+        for entry in self.inventory:
+            if entry["item"].name == item.name:
+                entry["quantity"] += quantity
+                return
+        # If not found, add new entry
+        self.inventory.append({"item": item, "quantity": quantity})
+
+    def remove_item_inventory(self, item, quantity=1):
+        """Remove a quantity of an item from the inventory. Removes entry if quantity reaches 0."""
+        for entry in self.inventory:
+            if entry["item"].name == item.name:
+                entry["quantity"] -= quantity
+                if entry["quantity"] <= 0:
+                    self.inventory.remove(entry)
+                return
+            
         
         
         
