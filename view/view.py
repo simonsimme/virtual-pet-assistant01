@@ -63,6 +63,8 @@ class view:
         hunger_surf = stat_font.render(f"Hunger: {self.pet.hunger}", True, (255, 180, 80))
         energy_surf = stat_font.render(f"Energy: {self.pet.energy}", True, (80, 200, 255))
         health_surf = stat_font.render(f"Health: {self.pet.health}", True, (80, 220, 120))
+        clean_surf = stat_font.render(f"Clean: {int(self.pet.clean)}", True, (200, 200, 200))
+
 
         # Center stats in the card
         # First row: mood and hunger
@@ -80,6 +82,13 @@ class view:
         row2_y = 105
         screen.blit(energy_surf, (row2_x, row2_y))
         screen.blit(health_surf, (row2_x + energy_surf.get_width() + 24, row2_y))
+
+        # Third row: clean
+        row3_surfs = [clean_surf]
+        row3_width = clean_surf.get_width()
+        row3_x = (self.window_width - row3_width) // 2
+        row3_y = 135
+        screen.blit(clean_surf, (row3_x, row3_y))
 
         # Draw button with modern look
         for button_name, (button_img, button_rect) in self.controller.buttons.items():
@@ -134,6 +143,13 @@ class view:
             
         
 
+
+        # Draw custom cleaning cursor if cleaning is active
+        if getattr(self.controller, 'cleaning_active', False):
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            icon = self.controller.buttons["clean"][0]
+            icon_rect = icon.get_rect(center=(mouse_x, mouse_y))
+            screen.blit(icon, icon_rect)
 
         pygame.display.flip()
     def pet_chat_response(self, response):

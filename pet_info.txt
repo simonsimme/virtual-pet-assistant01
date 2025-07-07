@@ -12,6 +12,8 @@ CONTINUING
 
 tamagichi type game loop
 
+
+
 Player activities:
 play
 feed 

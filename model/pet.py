@@ -13,18 +13,22 @@ class virtual_pet:
         self.energy = random.randint(30,70) # 0 exhausted, 100 energized
         self.age = 0
         self.health = random.randint(50, 100)  # 0 dead, 100 healthy
+        self.clean = random.randint(3, 40)  # 0 dirty, 100 clean
         self.tasks = []
         self.birth_date = time.strftime("%Y-%m-%d")
-        self.last_fed = time.time()
         
         self.animations = {}
         self.current_animation = "NONE"
         self.current_frame = 0
         self.frame_timer = 0
         self.frame_delay = 75  # ms per frame
-       
-        
+
+        self.activities = ["explore", "sleep", "eat", "clean", "idle","low-stats"]
+        self.current_activity = "idle"
+
         self.stop_states = ["laying", "sit"]
+        
+        self.moving_states = ["walk", "stretch", "run"]
 
         self.active_states = ["walk", "stretch", "run","lick", "itch"]
 
@@ -112,16 +116,52 @@ class virtual_pet:
             self.energy += 5
         if self.moodSlider > 100:
             self.moodSlider = 100
+    
+    def change_activity(self, activity):
         
-   
+        if activity not in self.activities:
+            print(f"Invalid activity: {activity}")
+            return
+        
+        if self.current_activity == "low-stats":
+            print(f"{self.name} is too tired or hungry to do anything else.")
+            return
+        if self.current_activity == activity:
+            return
+        
+        if activity == "explore":
+            if self.energy < 20 or self.hunger < 30:
+                print(f"{self.name} is too tired or hungry to explore.")
+                return
+            self.current_animation = random.choice(self.moving_states)
+        if activity == "clean":
+            if self.clean >= 100:
+                print(f"{self.name} is already clean.")
+                return
+            self.current_animation = "sit"
+        self.current_activity = activity
+        
+    def clean_pet(self):
+        if self.clean >= 100:
+            print(f"{self.name} is already clean.")
+            return
+        base = 4  # max amount added when very dirty
+        # The closer to 100, the smaller the increment
+        increment = base * (1 - (self.clean / 100))  # e.g., at 90, only 0.5 is added
+        if increment < 0.1:
+            increment = 0.05  # minimum increment
+        self.clean += increment
+        if self.clean > 100:
+            self.clean = 100
+        
     def update_animation(self):
         # Animation logic based on pet's parameters
         animation_switch = ""
         
-        
 
         if self.health <= 0:
             animation_switch = "laying"  # Dead or very sick
+            
         elif self.energy < 20 and self.current_animation == "laying":
             if self.hunger < 30:
                 animation_switch = "sleep2"  # Very tired and hungry
@@ -133,10 +173,15 @@ class virtual_pet:
             animation_switch = "itch"  # Sad or uncomfortable
         elif self.energy > 80 and self.moodSlider > 70:
             animation_switch = "run"  # Very happy and energetic
+        elif self.current_activity == "explore":
+            animation_switch = random.choice(self.moving_states)  # Random active state
+        elif self.current_activity == "clean":
+            self.current_animation = "sit"  # Cleaning state
+        
         else:
             animation_switch = random.choice(self.stop_states + self.active_states)
 
-        if self.current_animation != animation_switch:
+        if self.current_animation != animation_switch and self.current_activity == "idle":
             animation_switch = random.choice(self.stop_states + self.active_states)
             self.current_animation = animation_switch
         

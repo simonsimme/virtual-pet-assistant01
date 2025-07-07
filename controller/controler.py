@@ -11,8 +11,13 @@ class PetController:
         self.pet = pet_model
         self.buttons = {
             "feed": self.create_button(os.path.join("model","icons", "Monster Part", "Bone.png"), (10, 250)),
+            "clean": self.create_button(os.path.join("model","icons", "pixel", "scrub_brush.png"), (130, 250)),
+            "explore": self.create_button(os.path.join("model","icons","Misc","Map.png"), (190, 250)),
             "keyboard": self.create_button(os.path.join("model","icons", "toolbar", "keyboard.png"), (70, 250))
         }
+        self.cleaning_active = False
+        self.clean_icon = pygame.image.load(os.path.join("model","icons", "pixel", "scrub_brush.png")).convert_alpha()
+        self.clean_tick = 0;
     def setView(self, view):
         self.view = view
 
@@ -36,12 +41,40 @@ class PetController:
                     max_panel_height = self.view.window_height - 100
                     self.view.chat_panel_height = max(min_panel_height, min(new_height, max_panel_height))
 
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1 and self.buttons["feed"][1].collidepoint(event.pos):
-                self.pet.feed(5)
-            elif event.button == 1 and self.buttons["keyboard"][1].collidepoint(event.pos):
-                self.view.isChatopen = not self.view.isChatopen
-                #print("Chat panel toggled:", self.view.isChatopen)
+
+        if self.cleaning_active:
+            # Allow toggling cleaning mode off by clicking the clean button again
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.buttons["clean"][1].collidepoint(event.pos):
+                print("here")
+                self.cleaning_active = not self.cleaning_active
+                self.pet.change_activity("idle")  
+                pygame.mouse.set_visible(True)
+            # If cleaning mode is active, check for drag over pet
+            elif event.type == pygame.MOUSEMOTION and event.buttons[0]:
+                # Use view's sprite size and scale for pet collision
+                pet_x, pet_y = self.view.get_center_pos()
+                pet_w = self.view.sprite_width * self.view.scale
+                pet_h = self.view.sprite_height * self.view.scale
+                pet_rect = pygame.Rect(pet_x, pet_y, pet_w, pet_h)
+                
+                if pet_rect.collidepoint(event.pos):
+                    self.clean_tick += 1
+                    if self.clean_tick > 20:  # Adjust threshold as needed
+                        self.pet.clean_pet()
+                        self.clean_tick = 0  # Reset tick after cleaning
+        else:
+            if event.type == pygame.MOUSEBUTTONDOWN :
+                if event.button == 1 and self.buttons["feed"][1].collidepoint(event.pos):
+                    self.pet.feed(5)
+                elif event.button == 1 and self.buttons["keyboard"][1].collidepoint(event.pos):
+                    self.view.isChatopen = not self.view.isChatopen
+                elif event.button == 1 and self.buttons["clean"][1].collidepoint(event.pos):
+                    self.pet.change_activity("clean")
+                    self.cleaning_active = not self.cleaning_active
+                    # Hide system cursor, draw icon at mouse in view.draw
+                    pygame.mouse.set_visible(False)
+                elif event.button == 1 and self.buttons["explore"][1].collidepoint(event.pos):
+                    self.pet.change_activity("explore")
 
         return None
 
