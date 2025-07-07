@@ -50,7 +50,7 @@ class PetController:
                 self.pet.change_activity("idle")  
                 pygame.mouse.set_visible(True)
             # If cleaning mode is active, check for drag over pet
-            elif event.type == pygame.MOUSEMOTION and event.buttons[0]:
+            elif event.type == pygame.MOUSEMOTION and event.buttons[0] and self.pet.clean_cooldown < 100:
                 # Use view's sprite size and scale for pet collision
                 pet_x, pet_y = self.view.get_center_pos()
                 pet_w = self.view.sprite_width * self.view.scale
@@ -62,6 +62,11 @@ class PetController:
                     if self.clean_tick > 20:  # Adjust threshold as needed
                         self.pet.clean_pet()
                         self.clean_tick = 0  # Reset tick after cleaning
+            elif self.cleaning_active and self.pet.clean_cooldown >= 100:
+                self.cleaning_active = False
+                self.pet.change_activity("idle")
+                pygame.mouse.set_visible(True)
+                
         else:
             if event.type == pygame.MOUSEBUTTONDOWN :
                 if event.button == 1 and self.buttons["feed"][1].collidepoint(event.pos):
@@ -69,12 +74,19 @@ class PetController:
                 elif event.button == 1 and self.buttons["keyboard"][1].collidepoint(event.pos):
                     self.view.isChatopen = not self.view.isChatopen
                 elif event.button == 1 and self.buttons["clean"][1].collidepoint(event.pos):
-                    self.pet.change_activity("clean")
-                    self.cleaning_active = not self.cleaning_active
+                    if self.pet.clean_cooldown >= 100:
+                        print('cooldown')
+                    else:
+                        self.pet.change_activity("clean")
+                        self.cleaning_active = not self.cleaning_active
                     # Hide system cursor, draw icon at mouse in view.draw
                     pygame.mouse.set_visible(False)
                 elif event.button == 1 and self.buttons["explore"][1].collidepoint(event.pos):
-                    self.pet.change_activity("explore")
+                    print("explore button clicked")
+                    if self.pet.current_activity == "explore":
+                        self.pet.change_activity("idle")
+                    else:
+                        self.pet.change_activity("explore")
 
         return None
 

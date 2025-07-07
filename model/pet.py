@@ -14,6 +14,7 @@ class virtual_pet:
         self.age = 0
         self.health = random.randint(50, 100)  # 0 dead, 100 healthy
         self.clean = random.randint(3, 40)  # 0 dirty, 100 clean
+        self.clean_cooldown = 0
         self.tasks = []
         self.birth_date = time.strftime("%Y-%m-%d")
         
@@ -31,6 +32,7 @@ class virtual_pet:
         self.moving_states = ["walk", "stretch", "run"]
 
         self.active_states = ["walk", "stretch", "run","lick", "itch"]
+        self.petIsAlive = True
 
         frame_size = (50,50)
         
@@ -142,8 +144,8 @@ class virtual_pet:
         self.current_activity = activity
         
     def clean_pet(self):
-        if self.clean >= 100:
-            print(f"{self.name} is already clean.")
+        if self.clean >= 100 or not self.petIsAlive or self.clean_cooldown >= 100:
+            #print(f"{self.name} is already clean.")
             return
         base = 4  # max amount added when very dirty
         # The closer to 100, the smaller the increment
@@ -153,14 +155,22 @@ class virtual_pet:
         self.clean += increment
         if self.clean > 100:
             self.clean = 100
+        self.clean_cooldown += 5
         
+    def pet_died(self):
+        print(f"{self.name} has died.")
+        animation_switch = "laying"  # Dead or very sick
+        self.petIsAlive = False
+        self.current_animation = animation_switch
     def update_animation(self):
         # Animation logic based on pet's parameters
         animation_switch = ""
         
 
         if self.health <= 0:
-            animation_switch = "laying"  # Dead or very sick
+           
+            self.pet_died()
+            return
             
         elif self.energy < 20 and self.current_animation == "laying":
             if self.hunger < 30:
@@ -175,6 +185,11 @@ class virtual_pet:
             animation_switch = "run"  # Very happy and energetic
         elif self.current_activity == "explore":
             animation_switch = random.choice(self.moving_states)  # Random active state
+            self.moodSlider += random.randint(4, 8)
+            self.energy -= random.randint(1, 3)  
+            self.hunger -= random.randint(1, 3)
+            self.clean -= random.randint(1, 3)  
+            self.current_animation = animation_switch
         elif self.current_activity == "clean":
             self.current_animation = "sit"  # Cleaning state
         
@@ -184,6 +199,9 @@ class virtual_pet:
         if self.current_animation != animation_switch and self.current_activity == "idle":
             animation_switch = random.choice(self.stop_states + self.active_states)
             self.current_animation = animation_switch
+        self.cap_stats()
+        
+        
         
     def update_pet(self):
         # Age: 1 week in real time = 1 year for the pet
@@ -191,6 +209,8 @@ class virtual_pet:
         birth_time = time.mktime(time.strptime(self.birth_date, "%Y-%m-%d"))
         weeks_since_birth = int((current_time - birth_time) // (7 * 24 * 60 * 60))
         self.age = weeks_since_birth  # 1 week = 1 year
+        
+        self.clean_cooldown = max(0, self.clean_cooldown - random.randint(5, 10))  # Decrease cooldown over time
 
         if self.hunger > 0:
             self.hunger -= random.randint(1, 5)
@@ -216,8 +236,18 @@ class virtual_pet:
             self.health += self.hunger - 15 - age_multiplier
         if self.energy < 15:
             self.health += self.energy - 15 - age_multiplier
+            
+        self.cap_stats()
 
-        self.health = max(self.health, 0)
+
+    def cap_stats(self):
+        self.hunger = max(0, min(self.hunger, 100))
+        self.moodSlider = max(0, min(self.moodSlider, 100))
+        self.energy = max(0, min(self.energy, 100))
+        self.clean = max(0, min(self.clean, 100))
+        self.health = max(0, min(self.health, 100))
+        
+        
         
         
         

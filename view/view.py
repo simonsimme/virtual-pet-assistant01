@@ -96,6 +96,12 @@ class view:
             btn_rect = button_rect.inflate(12, 12)
             self.draw_rounded_rect(screen, (146, 179, 240), btn_rect, radius=14, shadow=True)
             screen.blit(button_img, button_rect)
+            # Show cleaning cooldown over the clean button
+            if button_name == "clean" and hasattr(self.pet, "clean_cooldown") and self.pet.clean_cooldown > 0:
+                font = pygame.font.SysFont('Segoe UI', 16, bold=True)
+                cooldown_text = font.render(f"{int(self.pet.clean_cooldown)}", True, (255, 50, 50))
+                text_rect = cooldown_text.get_rect(center=(button_rect.centerx, button_rect.top - 12))
+                screen.blit(cooldown_text, text_rect)
             
         #btn_rect = self.controller.button_rect.inflate(12, 12)
        # self.draw_rounded_rect(screen, (146, 179, 240), btn_rect, radius=14, shadow=True)
@@ -106,7 +112,7 @@ class view:
         self.pet.play_animation(screen, self.get_center_pos(), dt, name=self.pet.current_animation, scale=self.scale)
 
         # Footer or helper text
-        help_surf = label_font.render("Say 'Hey Adam' to interact!", True, (120, 130, 160))
+        help_surf = label_font.render(self.pet.current_activity + "...", True, (120, 130, 160))
         help_rect = help_surf.get_rect(center=(self.window_width//2, self.window_height-18))
         screen.blit(help_surf, help_rect)
         
