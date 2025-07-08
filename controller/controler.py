@@ -5,16 +5,17 @@ import pygame
 from model import task
 import datetime
 from controller.cameraController import Camera
+import threading
 
 class PetController:
     def __init__(self, pet_model):
         self.pet = pet_model
         self.buttons = {
-            "feed": self.create_button(os.path.join("model","icons", "Monster Part", "Bone.png"), (10, 250)),
-            "clean": self.create_button(os.path.join("model","icons", "pixel", "scrub_brush.png"), (130, 250)),
-            "explore": self.create_button(os.path.join("model","icons","Misc","Map.png"), (190, 250)),
-            "keyboard": self.create_button(os.path.join("model","icons", "toolbar", "keyboard.png"), (70, 250)),
-            "bag": self.create_button(os.path.join("model","icons", "Equipment", "Bag.png"), (310, 250))
+           # "feed": self.create_button(os.path.join("model","icons", "Monster Part", "Bone.png"), (10, 250)),
+            "clean": self.create_button(os.path.join("model","icons", "pixel", "scrub_brush.png"), (190, 300)),
+            "explore": self.create_button(os.path.join("model","icons","Misc","Map.png"), (250, 300)),
+            "keyboard": self.create_button(os.path.join("model","icons", "toolbar", "keyboard.png"), (10, 300)),
+            "bag": self.create_button(os.path.join("model","icons", "Equipment", "Bag.png"), (310, 300))
         }
         self.cleaning_active = False
         self.clean_icon = pygame.image.load(os.path.join("model","icons", "pixel", "scrub_brush.png")).convert_alpha()
@@ -72,13 +73,19 @@ class PetController:
                 
         else:
             if event.type == pygame.MOUSEBUTTONDOWN :
-                if event.button == 1 and self.buttons["feed"][1].collidepoint(event.pos):
-                    self.pet.feed(5)
-                elif event.button == 1 and self.buttons["keyboard"][1].collidepoint(event.pos):
+                
+                
+                if event.button == 1 and self.buttons["keyboard"][1].collidepoint(event.pos):
                     self.view.isChatopen = not self.view.isChatopen
                 elif event.button == 1 and self.buttons["bag"][1].collidepoint(event.pos):
                     self.isInventoryOpen = not self.isInventoryOpen
-                    
+                elif event.button == 1 and self.isInventoryOpen:
+                    mouse_x, mouse_y = event.pos
+                    for rect, entry in self.view.inventory_item_rects:
+                        if rect.collidepoint(mouse_x, mouse_y):
+                            entry["item"].use(self.pet)
+                            break
+                # Check if the clean button was clicked      
                 elif event.button == 1 and self.buttons["clean"][1].collidepoint(event.pos):
                     if self.pet.clean_cooldown >= 100:
                         print('cooldown')
@@ -94,8 +101,10 @@ class PetController:
                         self.pet.change_activity("idle")
                     else:
                         self.pet.change_activity("explore")
-                        self.pet.start_explore()
-                        
+                        explore_thread = threading.Thread(target=self.pet.start_explore, daemon=True)
+                        explore_thread.start()
+            if event.type == pygame.MOUSEWHEEL and self.isInventoryOpen:
+                self.view.inventory_scroll -= event.y
 
         return None
 

@@ -134,7 +134,7 @@ class virtual_pet:
             return
         
         if activity == "explore":
-            if self.energy < 20 or self.hunger < 30:
+            if self.energy < 20 or self.hunger < 20:
                 print(f"{self.name} is too tired or hungry to explore.")
                 return
             self.current_animation = random.choice(self.moving_states)
@@ -254,13 +254,13 @@ class virtual_pet:
         if self.energy < 10 or self.hunger < 10:
             print(f"{self.name} is too tired or hungry to explore.")
             return
-        item_chance = 100 #percent chance to find an item
+        item_chance = 50 #percent chance to find an item
         while self.current_activity == "explore":
             if random.randint(1, 100) <= item_chance:
-                found_item = random.choice(world_items.food_items)
+                found_item = random.choice(list(world_items().food_items.values()))
                 self.add_item_inventory(found_item)
                 print(f"{self.name} found a {found_item.name}!")
-            time.sleep(1)
+            time.sleep(3)
 
     def add_item_inventory(self, item, quantity=1):
         """Add an item and quantity to the pet's inventory."""

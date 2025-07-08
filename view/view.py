@@ -16,6 +16,8 @@ class view:
         self.chat_panel_height = self.window_height // 3
         self.dragging_chat_handle = False
         self.chat_handle_rect = None
+        self.inventory_scroll = 0
+        self.inventory_item_rects = []
     
     def window_resize(self, new_width, new_height):
         """Resize the window and update the view."""
@@ -44,7 +46,7 @@ class view:
         screen.fill((240, 245, 255))
 
         # Card for pet stats
-        card_rect = (20, 20, self.window_width-40, 110)
+        card_rect = (20, 20, self.window_width-40, 150)
         self.draw_rounded_rect(screen, (255, 255, 255), card_rect, radius=18, shadow=True)
 
         # Modern font
@@ -148,37 +150,61 @@ class view:
             screen.blit(input_surf, (input_rect.x + 5, input_rect.y + 5))
         
         if self.controller.isInventoryOpen:
-            # Draw inventory panel
-            inv_panel_height = self.window_height // 2
-            inv_panel_rect = pygame.Rect(0, self.window_height - inv_panel_height, self.window_width, inv_panel_height)
-            pygame.draw.rect(screen, (230, 230, 250), inv_panel_rect)
-            pygame.draw.rect(screen, (180, 180, 220), inv_panel_rect, 2)
+            # Backpack panel settings
+            inv_panel_width = 220
+            inv_panel_height = min(self.window_height - 60, 340)
+            inv_panel_x = self.window_width - inv_panel_width - 20
+            inv_panel_y = self.window_height/2 - inv_panel_height/2
+            inv_panel_rect = pygame.Rect(inv_panel_x, inv_panel_y, inv_panel_width, inv_panel_height)
+            # Backpack look: brownish, rounded, with a "zipper" at the top
+            self.draw_rounded_rect(screen, (181, 140, 90), inv_panel_rect, radius=32, shadow=True)
+            zipper_rect = pygame.Rect(inv_panel_x + 30, inv_panel_y - 10, inv_panel_width - 60, 16)
+            pygame.draw.rect(screen, (220, 200, 160), zipper_rect, border_radius=8)
+            pygame.draw.rect(screen, (120, 90, 60), zipper_rect, 2, border_radius=8)
 
             # Inventory grid settings
-            cols = 5
-            padding = 16
-            icon_size = 48
-            start_x = 24
-            start_y = self.window_height - inv_panel_height + 24
-            font = pygame.font.SysFont('Segoe UI', 16)
+            cols = 3
+            padding = 10
+            icon_size = 40
+            start_x = inv_panel_x + 18
+            start_y = inv_panel_y + 32
+            font = pygame.font.SysFont('Segoe UI', 14)
             mouse_x, mouse_y = pygame.mouse.get_pos()
-            hovered_item = None
+            hovered_entry = None
 
-            for idx, item in enumerate(self.pet.inventory):
-                row = idx // cols
-                col = idx % cols
+            # Scroll logic
+            items_per_row = cols
+            rows_visible = (inv_panel_height - 48) // (icon_size + 28)
+            total_rows = (len(self.pet.inventory) + cols - 1) // cols
+            max_scroll = max(0, total_rows - rows_visible)
+            scroll = getattr(self, "inventory_scroll", 0)
+            scroll = max(0, min(scroll, max_scroll))
+            self.inventory_scroll = scroll
+
+            # Only show visible items
+            first_visible_idx = scroll * cols
+            last_visible_idx = min(len(self.pet.inventory), first_visible_idx + rows_visible * cols)
+
+            for idx in range(first_visible_idx, last_visible_idx):
+                entry = self.pet.inventory[idx]
+                item = entry["item"]
+                quantity = entry["quantity"]
+                rel_idx = idx - first_visible_idx
+                row = rel_idx // cols
+                col = rel_idx % cols
                 x = start_x + col * (icon_size + padding)
-                y = start_y + row * (icon_size + 36)
+                y = start_y + row * (icon_size + 28)
                 item_rect = pygame.Rect(x, y, icon_size, icon_size)
+                self.inventory_item_rects.append((item_rect, entry))
 
                 # Draw icon background
-                pygame.draw.rect(screen, (255, 255, 255), item_rect, border_radius=8)
+                pygame.draw.rect(screen, (255, 245, 220), item_rect, border_radius=10)
                 # Hover effect
                 if item_rect.collidepoint(mouse_x, mouse_y):
-                    pygame.draw.rect(screen, (180, 220, 255), item_rect, 3, border_radius=8)
-                    hovered_item = item
+                    pygame.draw.rect(screen, (180, 220, 255), item_rect, 3, border_radius=10)
+                    hovered_entry = entry
                 else:
-                    pygame.draw.rect(screen, (180, 180, 220), item_rect, 2, border_radius=8)
+                    pygame.draw.rect(screen, (181, 140, 90), item_rect, 2, border_radius=10)
 
                 # Draw item icon if available
                 if hasattr(item, "icon") and item.icon:
@@ -191,28 +217,37 @@ class view:
                     screen.blit(letter_surf, letter_rect)
 
                 # Draw quantity
-                qty_surf = font.render(f"x{getattr(item, 'quantity', 1)}", True, (80, 80, 80))
+                qty_surf = font.render(f"x{quantity}", True, (80, 80, 80))
                 qty_rect = qty_surf.get_rect(bottomright=(x+icon_size-4, y+icon_size-4))
                 screen.blit(qty_surf, qty_rect)
 
-                # Draw item name below icon
-                name_surf = font.render(item.name, True, (50, 50, 80))
-                name_rect = name_surf.get_rect(center=(x+icon_size//2, y+icon_size+12))
-                screen.blit(name_surf, name_rect)
-
-            # Tooltip for hovered item
-            if hovered_item:
-                tooltip_font = pygame.font.SysFont('Segoe UI', 18, bold=True)
-                tooltip_text = getattr(hovered_item, "description", hovered_item.name)
+            # Draw item name below icon (only for hovered)
+            if hovered_entry:
+                item = hovered_entry["item"]
+                tooltip_font = pygame.font.SysFont('Segoe UI', 16, bold=True)
+                tooltip_text = getattr(item, "description", item.description if hasattr(item, "description") else item.name)
                 tooltip_surf = tooltip_font.render(tooltip_text, True, (30, 30, 60))
                 tooltip_bg = pygame.Surface((tooltip_surf.get_width()+16, tooltip_surf.get_height()+10), pygame.SRCALPHA)
                 tooltip_bg.fill((255, 255, 255, 230))
-                pygame.draw.rect(tooltip_bg, (180, 180, 220), tooltip_bg.get_rect(), 2, border_radius=8)
+                pygame.draw.rect(tooltip_bg, (181, 140, 90), tooltip_bg.get_rect(), 2, border_radius=8)
                 tooltip_pos = (mouse_x + 12, mouse_y - 8)
                 screen.blit(tooltip_bg, tooltip_pos)
                 screen.blit(tooltip_surf, (tooltip_pos[0]+8, tooltip_pos[1]+5))
-            
-        
+
+            # Draw scroll indicators if needed
+            if max_scroll > 0:
+                arrow_color = (120, 90, 60)
+                arrow_up = [(inv_panel_x + inv_panel_width//2 - 10, inv_panel_y + 8),
+                            (inv_panel_x + inv_panel_width//2 + 10, inv_panel_y + 8),
+                            (inv_panel_x + inv_panel_width//2, inv_panel_y - 4)]
+                arrow_down = [(inv_panel_x + inv_panel_width//2 - 10, inv_panel_y + inv_panel_height - 16),
+                              (inv_panel_x + inv_panel_width//2 + 10, inv_panel_y + inv_panel_height - 16),
+                              (inv_panel_x + inv_panel_width//2, inv_panel_y + inv_panel_height - 4)]
+                if scroll > 0:
+                    pygame.draw.polygon(screen, arrow_color, arrow_up)
+                if scroll < max_scroll:
+                    pygame.draw.polygon(screen, arrow_color, arrow_down)
+                
 
 
         # Draw custom cleaning cursor if cleaning is active

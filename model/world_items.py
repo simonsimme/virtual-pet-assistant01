@@ -5,7 +5,7 @@ class world_items:
         
         self.food_items = {
             "Fish": Food("Fish", 20, 10, "model/icons/Food/Fish Steak.png"),
-            "Steak": Food("Steaked Item", 30, 15, "model/icons/Food/Steaked Item.png"),
+            "Steak": Food("Steak", 30, 15, "model/icons/Food/Meat.png"),
         }
 
 
