@@ -18,6 +18,7 @@ class view:
         self.chat_handle_rect = None
         self.inventory_scroll = 0
         self.inventory_item_rects = []
+        self.event_text = []
     
     def window_resize(self, new_width, new_height):
         """Resize the window and update the view."""
@@ -112,6 +113,16 @@ class view:
         # Draw pet sprite (centered)
         self.pet.set_screen(screen, self.get_center_pos(), self.scale)
         self.pet.play_animation(screen, self.get_center_pos(), dt, name=self.pet.current_animation, scale=self.scale)
+        
+        if self.event_text:
+                event_font = pygame.font.SysFont('Segoe UI', 20, bold=True)
+                center_x, center_y = self.get_center_pos()
+                displayed_height = self.sprite_height * self.scale
+                base_y = center_y + displayed_height + 10  # 10px below pet
+                for i, msg in enumerate(self.event_text):
+                    msg_surf = event_font.render(msg, True, (180, 220, 255))
+                    msg_rect = msg_surf.get_rect(center=(self.window_width // 2, base_y + i * 28))
+                    screen.blit(msg_surf, msg_rect)
 
         # Footer or helper text
         help_surf = label_font.render(self.pet.current_activity + "...", True, (120, 130, 160))
@@ -148,6 +159,8 @@ class view:
             pygame.draw.rect(screen, (180, 180, 220), input_rect, 2)
             input_surf = font.render(self.chat_input, True, (0, 0, 0))
             screen.blit(input_surf, (input_rect.x + 5, input_rect.y + 5))
+            
+            
         
         if self.controller.isInventoryOpen:
             # Backpack panel settings
@@ -268,6 +281,12 @@ class view:
         cv2.imshow("Selfie", frame)
         
         cv2.waitKey(0)
+    def add_event_text(self, text):
+        """Add a new event message (max 3 shown)."""
+        self.event_text.append(text)
+        if len(self.event_text) > 3:
+            self.event_text = self.event_text[-3:]
+        print(text)
 
 
     def quit(self):

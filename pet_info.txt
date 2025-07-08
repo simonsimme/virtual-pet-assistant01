@@ -33,6 +33,11 @@ decorate room (cosmetic, boosts mood)
 listen to music (pet dances, boosts mood)
 
 
+-event text
+-save state
+-start game, chose what cat
+-loop game on death
+-add age as highscore
 
 
 

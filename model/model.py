@@ -31,6 +31,8 @@ def main():
     controller.setView(game_view)
     view_thread = threading.Thread(target=game_view.draw, args=(screen, 0), daemon=True)
     view_thread.start()
+    
+    my_pet.set_game_view(game_view)
 
     # Import SpeechAssistant here to avoid circular import
     from . import speech_rec

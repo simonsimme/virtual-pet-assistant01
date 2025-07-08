@@ -6,7 +6,7 @@ import pygame
 import os
 
 class virtual_pet:
-    def __init__(self, name, cat_nr=5 ):
+    def __init__(self, name, cat_nr=5, game_view=None):
         self.name = name
         self.hunger = random.randint(30,60) # 0 starving, 100 full
         self.mood = "Happy"
@@ -37,6 +37,7 @@ class virtual_pet:
         self.petIsAlive = True
 
         frame_size = (50,50)
+        self.view = game_view
         
        # Load all animations using cat_nr
         self.load_animation("walk", f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Walk.png", frame_size , 8)
@@ -51,7 +52,9 @@ class virtual_pet:
         self.load_animation("itch", f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Itch.png", frame_size , 2)
         self.load_animation("laying", f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Laying.png", frame_size , 8)
         
-        
+    def set_game_view(self, game_view):
+        """Set the game view for the pet."""
+        self.view = game_view
       
 
     def set_screen(self,screen, pos, scale=2):
@@ -128,19 +131,20 @@ class virtual_pet:
             return
         
         if self.current_activity == "low-stats":
-            print(f"{self.name} is too tired or hungry to do anything else.")
+            self.view.add_event_text(f"{self.name} is too tired or hungry to do anything else.")
             return
         if self.current_activity == activity:
             return
         
         if activity == "explore":
             if self.energy < 20 or self.hunger < 20:
-                print(f"{self.name} is too tired or hungry to explore.")
+                self.view.add_event_text(f"{self.name} is too tired or hungry to explore.")
                 return
             self.current_animation = random.choice(self.moving_states)
         if activity == "clean":
             if self.clean >= 100:
-                print(f"{self.name} is already clean.")
+                self.view.add_event_text(f"{self.name} is already clean.")
+                #print(f"{self.name} is already clean.")
                 return
             self.current_animation = "sit"
         self.current_activity = activity
@@ -207,11 +211,8 @@ class virtual_pet:
         
     def update_pet(self):
         # Age: 1 week in real time = 1 year for the pet
-        current_time = time.time()
-        birth_time = time.mktime(time.strptime(self.birth_date, "%Y-%m-%d"))
-        weeks_since_birth = int((current_time - birth_time) // (7 * 24 * 60 * 60))
-        self.age = weeks_since_birth  # 1 week = 1 year
-        
+        self.age += 1  # 1 per 10 min
+
         self.clean_cooldown = max(0, self.clean_cooldown - random.randint(5, 10))  # Decrease cooldown over time
 
         if self.hunger > 0:
@@ -233,6 +234,8 @@ class virtual_pet:
         age_multiplier = 0
         if self.age > 50:
             age_multiplier = 2
+        elif self.age > 100:
+            age_multiplier = 5
 
         if self.hunger < 15:
             self.health += self.hunger - 15 - age_multiplier
@@ -259,7 +262,8 @@ class virtual_pet:
             if random.randint(1, 100) <= item_chance:
                 found_item = random.choice(list(world_items().food_items.values()))
                 self.add_item_inventory(found_item)
-                print(f"{self.name} found a {found_item.name}!")
+                self.view.add_event_text(f"{self.name} found a {found_item.name}!")
+                #print(f"{self.name} found a {found_item.name}!")
             time.sleep(3)
 
     def add_item_inventory(self, item, quantity=1):
