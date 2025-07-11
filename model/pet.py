@@ -38,6 +38,7 @@ class virtual_pet:
 
         frame_size = (50,50)
         self.view = game_view
+        self.cat_nr = cat_nr
         
        # Load all animations using cat_nr
         self.load_animation("walk", f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Walk.png", frame_size , 8)
@@ -172,6 +173,7 @@ class virtual_pet:
         # Animation logic based on pet's parameters
         animation_switch = ""
         
+        self.clean_cooldown = max(0, self.clean_cooldown - random.randint(5, 10))  # Decrease cooldown over time
 
         if self.health <= 0:
            
@@ -213,7 +215,7 @@ class virtual_pet:
         # Age: 1 week in real time = 1 year for the pet
         self.age += 1  # 1 per 10 min
 
-        self.clean_cooldown = max(0, self.clean_cooldown - random.randint(5, 10))  # Decrease cooldown over time
+        
 
         if self.hunger > 0:
             self.hunger -= random.randint(1, 5)
@@ -284,7 +286,37 @@ class virtual_pet:
                 if entry["quantity"] <= 0:
                     self.inventory.remove(entry)
                 return
-            
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "mood": self.mood,
+            "hunger": self.hunger,
+            "energy": self.energy,
+            "health": self.health,
+            "clean": self.clean,
+            "inventory": [
+                {"item": item["item"].name, "quantity": item["quantity"]}
+                for item in self.inventory
+            ],
+            "cat_nr": self.cat_nr,
+            "age": self.age,
+            "clean_cooldown": self.clean_cooldown  # Save clean cooldown
+        }
+
+    def from_dict(self, data, item_lookup):
+        self.name = data["name"]
+        self.mood = data["mood"]
+        self.hunger = data["hunger"]
+        self.energy = data["energy"]
+        self.health = data["health"]
+        self.clean = data["clean"]
+        self.inventory = [
+            {"item": item_lookup[item["item"]], "quantity": item["quantity"]}
+            for item in data["inventory"]
+        ]
+        self.cat_nr = data.get("cat_nr", 5)
+        self.age = data.get("age", 0)
+        self.clean_cooldown = data.get("clean_cooldown", 0)
         
         
         

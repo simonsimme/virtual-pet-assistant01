@@ -33,8 +33,8 @@ decorate room (cosmetic, boosts mood)
 listen to music (pet dances, boosts mood)
 
 
--event text
--save state
+-event text X
+-save state X
 -start game, chose what cat
 -loop game on death
 -add age as highscore
