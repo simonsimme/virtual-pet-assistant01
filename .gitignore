@@ -1,3 +1,5 @@
 model/credentials.json
 token.pickle
 token_tasks.pickle
+age_highscore.txt
+savegame.json

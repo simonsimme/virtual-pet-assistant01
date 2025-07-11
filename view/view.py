@@ -67,6 +67,7 @@ class view:
         energy_surf = stat_font.render(f"Energy: {self.pet.energy}", True, (80, 200, 255))
         health_surf = stat_font.render(f"Health: {self.pet.health}", True, (80, 220, 120))
         clean_surf = stat_font.render(f"Clean: {int(self.pet.clean)}", True, (200, 200, 200))
+        age_surf = stat_font.render(f"Age: {self.pet.age} weeks", True, (180, 150, 100))
 
 
         # Center stats in the card
@@ -86,12 +87,14 @@ class view:
         screen.blit(energy_surf, (row2_x, row2_y))
         screen.blit(health_surf, (row2_x + energy_surf.get_width() + 24, row2_y))
 
-        # Third row: clean
-        row3_surfs = [clean_surf]
-        row3_width = clean_surf.get_width()
+        # Third row: clean and age
+        row3_surfs = [clean_surf, age_surf]
+        row3_width = sum(surf.get_width() for surf in row3_surfs) + 24 * (len(row3_surfs) - 1)
         row3_x = (self.window_width - row3_width) // 2
         row3_y = 135
-        screen.blit(clean_surf, (row3_x, row3_y))
+        for i, surf in enumerate(row3_surfs):
+            screen.blit(surf, (row3_x + i * (surf.get_width() + 24), row3_y))
+        
 
         # Draw button with modern look
         for button_name, (button_img, button_rect) in self.controller.buttons.items():

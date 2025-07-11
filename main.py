@@ -1,4 +1,4 @@
-from model.model import main
+from model.model import run_game
 
 if __name__ == "__main__":
-    main()
+    run_game()

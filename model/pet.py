@@ -4,6 +4,7 @@ import random
 import time
 import pygame
 import os
+from . import save_load
 
 class virtual_pet:
     def __init__(self, name, cat_nr=5, game_view=None):
@@ -13,7 +14,7 @@ class virtual_pet:
         self.moodSlider = random.randint(60,80) # 0 sad, 100 happy
         self.energy = random.randint(30,70) # 0 exhausted, 100 energized
         self.age = 0
-        self.health = random.randint(50, 100)  # 0 dead, 100 healthy
+        self.health = 1 #random.randint(50, 100)  # 0 dead, 100 healthy
         self.clean = random.randint(3, 40)  # 0 dirty, 100 clean
         self.clean_cooldown = 0
         self.tasks = []
@@ -168,7 +169,11 @@ class virtual_pet:
         print(f"{self.name} has died.")
         animation_switch = "laying"  # Dead or very sick
         self.petIsAlive = False
-        self.current_animation = animation_switch
+        self.current_animation = animation_switch 
+        
+        
+        
+        
     def update_animation(self):
         # Animation logic based on pet's parameters
         animation_switch = ""
@@ -214,7 +219,10 @@ class virtual_pet:
     def update_pet(self):
         # Age: 1 week in real time = 1 year for the pet
         self.age += 1  # 1 per 10 min
-
+        if self.health <= 0:
+           
+            self.pet_died()
+            return
         
 
         if self.hunger > 0:

@@ -35,9 +35,11 @@ listen to music (pet dances, boosts mood)
 
 -event text X
 -save state X
--start game, chose what cat
+-start game, chose what cat X
 -loop game on death
 -add age as highscore
+
+-stat balance
 
 
 
