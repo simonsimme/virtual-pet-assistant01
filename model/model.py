@@ -11,124 +11,161 @@ from . import googledochelper
 import random
 from . import save_load
 from . import world_items
+import logging
+from . import stopable_thread
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s') 
 
 
  
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def run_game():
-    
-
     while True:
-        pygame.init()
-        pygame.display.set_caption("Virtual Pet Assistant")
-        pygame.display.set_icon(pygame.image.load(
-        os.path.join("model","idle animation", "sprite0.png")))
-        windowwidth, windowheight = 400, 400
-        screen = pygame.display.set_mode((windowwidth, windowheight), pygame.RESIZABLE)
-        clock = pygame.time.Clock()
+        try:
+            logging.info("Initializing pygame...")
+            pygame.init()
+            pygame.display.set_caption("Virtual Pet Assistant")
+            pygame.display.set_icon(pygame.image.load(
+                os.path.join("model", "idle animation", "sprite0.png")))
+            windowwidth, windowheight = 400, 400
+            screen = pygame.display.set_mode((windowwidth, windowheight), pygame.RESIZABLE)
+            clock = pygame.time.Clock()
 
-        prev_game = save_load.save_exists()
-        if prev_game:
-            my_pet = pet.virtual_pet("adam")
-            # Optionally: save_load.load_game(my_pet, world_items.world_items().food_items)
-        else:
-            cat_options = [
-                {"id": 1, "display": "Pissy orange"},
-                {"id": 2, "display": "Batman"},
-                {"id": 3, "display": "Sigma white"},
-                {"id": 4, "display": "Weird brown"},
-                {"id": 5, "display": "whity"},
-                {"id": 6, "display": "Grey catty"},
-            ]
-            cat_nr, pet_name = start_screen(screen, cat_options)
-            my_pet = pet.virtual_pet(pet_name, cat_nr=cat_nr)
+            logging.info("Checking for previous game save...")
+            prev_game = save_load.save_exists()
+            if prev_game:
+                my_pet = pet.virtual_pet("adam")
+                save_load.load_game(my_pet)
+                logging.info(f"Loaded previous game for pet: {my_pet.name}")
+            else:
+                cat_options = [
+                    {"id": 1, "display": "Pissy orange"},
+                    {"id": 2, "display": "Batman"},
+                    {"id": 3, "display": "Sigma white"},
+                    {"id": 4, "display": "Weird brown"},
+                    {"id": 5, "display": "whity"},
+                    {"id": 6, "display": "Grey catty"},
+                ]
+                cat_nr, pet_name = start_screen(screen, cat_options)
+                my_pet = pet.virtual_pet(pet_name, cat_nr=cat_nr)
 
-        pet_thread = threading.Thread(target=my_pet.update_pet, daemon=True)
-        controller = PetController(my_pet)
-        game_view = view(my_pet, controller, window_width=windowwidth, window_height=windowheight)
-        controller.setView(game_view)
-        view_thread = threading.Thread(target=game_view.draw, args=(screen, 0), daemon=True)
-        view_thread.start()
-        my_pet.set_game_view(game_view)
+            logging.info("Starting threads...")
+            pet_thread = stopable_thread.StoppableThread(target=my_pet.update_pet, daemon=True)
+            controller = PetController(my_pet)
+            game_view = view(my_pet, controller, window_width=windowwidth, window_height=windowheight)
+            controller.setView(game_view)
+            view_thread = stopable_thread.StoppableThread(target=game_view.draw, args=(screen, 0), daemon=True)
+            view_thread.start()
+            my_pet.set_game_view(game_view)
 
-        from . import speech_rec
-        speech_assistant = speech_rec.SpeechAssistant(screen, game_view, my_pet.name, wake_word="hey adam")
-        speech_thread = threading.Thread(target=speech_assistant.run, daemon=True)
-        speech_thread.start()
+            from . import speech_rec
+            speech_assistant = speech_rec.SpeechAssistant(screen, game_view, my_pet.name, wake_word="hey adam")
+            speech_thread = stopable_thread.StoppableThread(target=speech_assistant.run, daemon=True)
+            speech_thread.start()
 
-        update_interval = 6000
-        update_timer = 0
-        update_activity_interval = 15000
-        update_activity_timer = 70000
+            update_interval = 600
+            update_timer = 0
+            update_activity_interval = 15000
+            update_activity_timer = 70000
 
-        running = True
-        first = True
-        restart_requested = False
+            running = True
+            first = True
+            restart_requested = False
 
-        while running:
-            dt = clock.tick(60)
-            update_timer += dt
-            update_activity_timer += dt
-            game_view.draw(screen, dt)
-            if first:
-                pet_thread.start()
-                first = False
-            if my_pet.health <= 0:
-                save_load.save_age_highscore(my_pet)
-                death_screen(screen, my_pet.name, my_pet.age)
-                save_load.delete_save()
-                speech_assistant.exit()
-                running = False
-                restart_requested = True
-                break
-
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                    save_load.save_game(my_pet)
+            logging.info("Entering main game loop...")
+            while running:
+                dt = clock.tick(60)
+                update_timer += dt
+                update_activity_timer += dt
+                game_view.draw(screen, dt)
+                if first:
+                    pet_thread.start()
+                    first = False
+                if my_pet.health <= 0:
+                    logging.info("Pet has died. Showing death screen...")
                     save_load.save_age_highscore(my_pet)
-                elif event.type == pygame.VIDEORESIZE:
-                    windowwidth, windowheight = event.w, event.h
-                    screen = pygame.display.set_mode((windowwidth, windowheight), pygame.RESIZABLE)
-                    game_view.window_resize(windowwidth, windowheight)
-                if game_view.isChatopen and event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:
-                        if game_view.chat_input.strip():
-                            game_view.chat_log.append(("You", game_view.chat_input))
-                            prev_log = ""
-                            if len(game_view.chat_log) > 1:
-                                prev_sender, prev_msg = game_view.chat_log[-2]
-                                prev_log = f"{prev_sender}: {prev_msg}"
+                    death_screen(screen, my_pet.name, my_pet.age)
+                    save_load.delete_save()
+                    speech_assistant.exit()
+                    stop_all_threads(pet_thread, view_thread, speech_thread)
+                   # running = False
+                    restart_requested = True
+                    break
 
-                            def chat_llm_thread():
-                                speech_assistant.handle_response_text(
-                                    f"PREVIOUS CONVERSATION [{prev_log}] NEW USER COMMAND [{game_view.chat_input}]"
-                                )
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        logging.info("Quit event detected. Exiting game...")
+                        running = False
+                        save_load.save_game(my_pet)
+                        save_load.save_age_highscore(my_pet)
+                    elif event.type == pygame.VIDEORESIZE:
+                        windowwidth, windowheight = event.w, event.h
+                        screen = pygame.display.set_mode((windowwidth, windowheight), pygame.RESIZABLE)
+                        game_view.window_resize(windowwidth, windowheight)
+                    if game_view.isChatopen and event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_RETURN:
+                            if game_view.chat_input.strip():
+                                game_view.chat_log.append(("You", game_view.chat_input))
+                                prev_log = ""
+                                if len(game_view.chat_log) > 1:
+                                    prev_sender, prev_msg = game_view.chat_log[-2]
+                                    prev_log = f"{prev_sender}: {prev_msg}"
 
-                            threading.Thread(target=chat_llm_thread, daemon=True).start()
-                            game_view.chat_input = ""
-                    elif event.key == pygame.K_BACKSPACE:
-                        game_view.chat_input = game_view.chat_input[:-1]
-                    elif event.unicode and event.unicode.isprintable():
-                        game_view.chat_input += event.unicode
-                else:
-                    controller.handle_event(event)
+                                def chat_llm_thread():
+                                    speech_assistant.handle_response_text(
+                                        f"PREVIOUS CONVERSATION [{prev_log}] NEW USER COMMAND [{game_view.chat_input}]"
+                                    )
 
-            if update_timer >= update_interval:
-                my_pet.update_pet()
-                update_timer = 0
-            if update_activity_timer >= update_activity_interval:
-                my_pet.update_animation()
-                update_activity_timer = 0
-                update_activity_interval = random.randint(3000, 45000)
-            pygame.display.flip()
+                                threading.Thread(target=chat_llm_thread, daemon=True).start()
+                                game_view.chat_input = ""
+                        elif event.key == pygame.K_BACKSPACE:
+                            game_view.chat_input = game_view.chat_input[:-1]
+                        elif event.unicode and event.unicode.isprintable():
+                            game_view.chat_input += event.unicode
+                    else:
+                        controller.handle_event(event)
 
-        speech_assistant.exit()
-        pygame.quit()
-        if not restart_requested:
-            break  # Exit the outer loop and end the game
+                if update_timer >= update_interval:
+                    my_pet.update_pet()
+                    update_timer = 0
+                if update_activity_timer >= update_activity_interval:
+                    my_pet.update_animation()
+                    update_activity_timer = 0
+                    update_activity_interval = random.randint(3000, 45000)
+                pygame.display.flip()
 
+            speech_assistant.exit()
+            if not restart_requested:
+                logging.info("Exiting outer loop. Ending game...")
+                break  # Exit the outer loop and end the game
 
+        except Exception as e:
+            logging.error(f"An error occurred: {e}")
+            pygame.quit()
+            sys.exit()
+
+    pygame.quit()  # Ensure pygame.quit() is only called when exiting the program
+def stop_all_threads(pet_thread, view_thread, speech_thread):
+    """Stops all threads gracefully."""
+    logging.info("Stopping all threads...")
+    pet_thread.stop()
+    print("Stopping pet thread...")
+    view_thread.stop()
+    print("Stopping view thread...")
+    speech_thread.stop()
+    print("Stopping speech thread...")
+    pet_thread.join()
+    print("Pet thread joined.")
+    view_thread.join()
+    print("View thread joined.")
+    speech_thread.join()
+    print("Speech thread joined.")
+    logging.info("All threads stopped.")
+   
+    
 def death_screen(screen, pet_name, pet_age):
     font = pygame.font.SysFont('Segoe UI', 32, bold=True)
     small_font = pygame.font.SysFont('Segoe UI', 22)

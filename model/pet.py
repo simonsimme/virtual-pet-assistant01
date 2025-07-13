@@ -7,14 +7,14 @@ import os
 from . import save_load
 
 class virtual_pet:
-    def __init__(self, name, cat_nr=5, game_view=None):
+    def __init__(self, name, cat_nr=5, game_view=None, god_mode=False):
         self.name = name
         self.hunger = random.randint(30,60) # 0 starving, 100 full
         self.mood = "Happy"
         self.moodSlider = random.randint(60,80) # 0 sad, 100 happy
         self.energy = random.randint(30,70) # 0 exhausted, 100 energized
         self.age = 0
-        self.health = 1 #random.randint(50, 100)  # 0 dead, 100 healthy
+        self.health = random.randint(60, 100)  # 0 dead, 100 healthy
         self.clean = random.randint(3, 40)  # 0 dirty, 100 clean
         self.clean_cooldown = 0
         self.tasks = []
@@ -40,6 +40,7 @@ class virtual_pet:
         frame_size = (50,50)
         self.view = game_view
         self.cat_nr = cat_nr
+        self.god_mode = god_mode
         
        # Load all animations using cat_nr
         self.load_animation("walk", f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Walk.png", frame_size , 8)
@@ -161,7 +162,7 @@ class virtual_pet:
         if increment < 0.1:
             increment = 0.05  # minimum increment
         self.clean += increment
-        if self.clean > 100:
+        if self.clean >= 100:
             self.clean = 100
         self.clean_cooldown += 5
         
@@ -176,6 +177,7 @@ class virtual_pet:
         
     def update_animation(self):
         # Animation logic based on pet's parameters
+        
         animation_switch = ""
         
         self.clean_cooldown = max(0, self.clean_cooldown - random.randint(5, 10))  # Decrease cooldown over time
@@ -213,10 +215,22 @@ class virtual_pet:
             animation_switch = random.choice(self.stop_states + self.active_states)
             self.current_animation = animation_switch
         self.cap_stats()
-        
+        if self.god_mode:
+            self.hunger = 100
+            self.moodSlider = 100
+            self.energy = 100
+            self.clean = 100
+            self.health = 100
         
         
     def update_pet(self):
+        if self.god_mode:
+            self.hunger = 100
+            self.moodSlider = 100
+            self.energy = 100
+            self.clean = 100
+            self.health = 100
+            return
         # Age: 1 week in real time = 1 year for the pet
         self.age += 1  # 1 per 10 min
         if self.health <= 0:
@@ -238,6 +252,10 @@ class virtual_pet:
             self.mood = "Hungry"
         elif self.moodSlider < 25:
             self.mood = "Sad"
+        elif self.energy < 20:
+            self.mood = "Tired"
+        elif self.clean < 15:
+            self.mood = "Dirty"
         else:
             self.mood = "Happy"
 
@@ -251,6 +269,8 @@ class virtual_pet:
             self.health += self.hunger - 15 - age_multiplier
         if self.energy < 15:
             self.health += self.energy - 15 - age_multiplier
+        if self.clean < 10:
+            self.health += self.clean - 10 - age_multiplier
             
         self.cap_stats()
 

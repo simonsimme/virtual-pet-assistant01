@@ -114,9 +114,21 @@ class view:
        #screen.blit(self.controller.button_img, self.controller.button_rect)
 
         # Draw pet sprite (centered)
-        self.pet.set_screen(screen, self.get_center_pos(), self.scale)
-        self.pet.play_animation(screen, self.get_center_pos(), dt, name=self.pet.current_animation, scale=self.scale)
+        temp_scale = max(1, 1 + (self.pet.age / 50))
+        scale_pet = min(temp_scale, self.scale * 2)
+
+        # Adjust center position based on dynamic scaling
+        displayed_width = self.sprite_width * scale_pet
+        displayed_height = self.sprite_height * scale_pet
+        center_x = (self.window_width - displayed_width) // 2
+        center_y = (self.window_height - displayed_height) // 2
+        center_pos = (center_x, center_y)
         
+        self.pet.set_screen(screen, center_pos, scale_pet)
+        self.pet.play_animation(screen, center_pos, dt, name=self.pet.current_animation, scale=scale_pet)
+
+        
+
         if self.event_text:
                 event_font = pygame.font.SysFont('Segoe UI', 20, bold=True)
                 center_x, center_y = self.get_center_pos()

@@ -50,6 +50,7 @@ class LLM:
         return response.json()["response"].strip()
     
     def stop_ollama(self):
+        print("LLM stop_ollama() called")
         try:
             subprocess.Popen(["ollama", "stop"])
         except Exception as e:

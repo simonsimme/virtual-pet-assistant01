@@ -25,6 +25,7 @@ class SpeechAssistant:
             self.engine.runAndWait()
     def exit(self):
         self.llm.stop_ollama()
+        self.stop_flag = True
 
     def __init__(self, screen, game_view, pet_name, wake_word, language="en-US"):
         self.wake_word = wake_word
@@ -40,6 +41,7 @@ class SpeechAssistant:
         self.game_view = game_view
         self.llm = LLM(pet_name)
         self.name = pet_name
+        self.stop_flag = False
         
     def listen_for_wake_word(self):
         if self.mic is None:
@@ -222,11 +224,17 @@ class SpeechAssistant:
 
 
     def run(self):
+        try:
+            self.mic = sr.Microphone()
+        except Exception as e:
+            print(f"Microphone initialization failed: {e}")
+            self.mic = None
+
         if self.mic is None:
             print("Microphone not initialized. Please check your setup.")
             return
         continue_running = False
-        while True:
+        while True and not self.stop_flag:
             if not self.game_view.isChatopen and self.listen_for_wake_word():
                 user_command = self.listen_for_command()
                 response = self.llm.ask_ollama(user_command)
