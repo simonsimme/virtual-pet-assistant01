@@ -1,25 +1,19 @@
 import json
 import os
-from model.world_items import world_items
+
 
 def save_game(pet, filename="savegame.json"):
     with open(filename, "w") as f:
         json.dump(pet.to_dict(), f)
 
-def load_game(pet, item_lookup=None, filename="savegame.json"):
-    """Load the game state from a save file."""
+def load_game(pet, item_lookup, filename="savegame.json"):
     try:
-        if item_lookup is None:
-            # Initialize world_items only after pygame is initialized
-            from model.world_items import world_items
-            item_lookup = world_items().food_items
-
         with open(filename, "r") as f:
             data = json.load(f)
             pet.from_dict(data, item_lookup)
             return True
     except FileNotFoundError:
-        return False  # File not found, return False
+        return False # File not found, return False
 def save_exists(filename="savegame.json"):
     """Check if a save file exists."""
     try:

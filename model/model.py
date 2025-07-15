@@ -1,7 +1,6 @@
 
 import sys
 import os
-from matplotlib import scale
 import pygame
 import threading
 from . import pet
@@ -10,7 +9,7 @@ from view import view
 from . import googledochelper
 import random
 from . import save_load
-from . import world_items
+from .world_items import world_items
 import logging
 from . import stopable_thread
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s') 
@@ -37,8 +36,8 @@ def run_game():
             logging.info("Checking for previous game save...")
             prev_game = save_load.save_exists()
             if prev_game:
-                my_pet = pet.virtual_pet("adam")
-                save_load.load_game(my_pet)
+                my_pet = pet.virtual_pet("adam", god_mode=True)
+                save_load.load_game(my_pet, world_items().food_items)
                 logging.info(f"Loaded previous game for pet: {my_pet.name}")
             else:
                 cat_options = [
@@ -50,7 +49,7 @@ def run_game():
                     {"id": 6, "display": "Grey catty"},
                 ]
                 cat_nr, pet_name = start_screen(screen, cat_options)
-                my_pet = pet.virtual_pet(pet_name, cat_nr=cat_nr)
+                my_pet = pet.virtual_pet(pet_name, cat_nr=cat_nr, god_mode=True)
 
             logging.info("Starting threads...")
             pet_thread = stopable_thread.StoppableThread(target=my_pet.update_pet, daemon=True)

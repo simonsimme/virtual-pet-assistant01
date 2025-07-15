@@ -224,6 +224,8 @@ class virtual_pet:
         
         
     def update_pet(self):
+        self.age += 1  # 1 per 10 min
+        
         if self.god_mode:
             self.hunger = 100
             self.moodSlider = 100
@@ -232,7 +234,6 @@ class virtual_pet:
             self.health = 100
             return
         # Age: 1 week in real time = 1 year for the pet
-        self.age += 1  # 1 per 10 min
         if self.health <= 0:
            
             self.pet_died()

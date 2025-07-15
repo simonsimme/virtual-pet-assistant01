@@ -39,6 +39,9 @@ listen to music (pet dances, boosts mood)
 -loop game on death X
 -add age as highscore X
 
+-fix loading old save X
+-fix scaling X
+
 -stat balance
 -stat testing
 -LLM testing
