@@ -116,7 +116,7 @@ class view:
         # Draw pet sprite (centered)
         temp_scale = max(4, 4 + (self.pet.age / 25))
         scale_pet = min(temp_scale, self.scale * 1.5)  # Scale up to 1.5x max
-        print(f"Scale: {scale_pet}, Temp Scale: {temp_scale}")
+        #print(f"Scale: {scale_pet}, Temp Scale: {temp_scale}")
 
         # Adjust center position based on dynamic scaling
         displayed_width = self.sprite_width * scale_pet
