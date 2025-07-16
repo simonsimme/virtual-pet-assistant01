@@ -65,7 +65,8 @@ def run_game():
             speech_thread = stopable_thread.StoppableThread(target=speech_assistant.run, daemon=True)
             speech_thread.start()
 
-            update_interval = 600
+            update_interval = 6000  # 10 minutes in milliseconds
+            
             update_timer = 0
             update_activity_interval = 15000
             update_activity_timer = 70000
@@ -86,10 +87,11 @@ def run_game():
                 if my_pet.health <= 0:
                     logging.info("Pet has died. Showing death screen...")
                     save_load.save_age_highscore(my_pet)
-                    death_screen(screen, my_pet.name, my_pet.age)
                     save_load.delete_save()
                     speech_assistant.exit()
                     stop_all_threads(pet_thread, view_thread, speech_thread)
+                    death_screen(screen, my_pet.name, my_pet.age)
+                    
                    # running = False
                     restart_requested = True
                     break
@@ -156,12 +158,7 @@ def stop_all_threads(pet_thread, view_thread, speech_thread):
     print("Stopping view thread...")
     speech_thread.stop()
     print("Stopping speech thread...")
-    pet_thread.join()
-    print("Pet thread joined.")
-    view_thread.join()
-    print("View thread joined.")
-    speech_thread.join()
-    print("Speech thread joined.")
+   
     logging.info("All threads stopped.")
    
     

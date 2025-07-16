@@ -9,13 +9,13 @@ from . import save_load
 class virtual_pet:
     def __init__(self, name, cat_nr=5, game_view=None, god_mode=False):
         self.name = name
-        self.hunger = random.randint(30,60) # 0 starving, 100 full
+        self.hunger = 100 # random.randint(30,60) # 0 starving, 100 full
         self.mood = "Happy"
-        self.moodSlider = random.randint(60,80) # 0 sad, 100 happy
-        self.energy = random.randint(30,70) # 0 exhausted, 100 energized
+        self.moodSlider = 100#random.randint(60,80) # 0 sad, 100 happy
+        self.energy = 100 # random.randint(30,70) # 0 exhausted, 100 energized
         self.age = 0
-        self.health = random.randint(60, 100)  # 0 dead, 100 healthy
-        self.clean = random.randint(3, 40)  # 0 dirty, 100 clean
+        self.health = 100 # random.randint(60, 100)  # 0 dead, 100 healthy
+        self.clean = 100 # random.randint(3, 40)  # 0 dirty, 100 clean
         self.clean_cooldown = 0
         self.tasks = []
         self.birth_date = time.strftime("%Y-%m-%d")
@@ -156,16 +156,19 @@ class virtual_pet:
         if self.clean >= 100 or not self.petIsAlive or self.clean_cooldown >= 100:
             #print(f"{self.name} is already clean.")
             return
-        base = 4  # max amount added when very dirty
+        base = 7  # max amount added when very dirty
         # The closer to 100, the smaller the increment
         increment = base * (1 - (self.clean / 100))  # e.g., at 90, only 0.5 is added
         if increment < 0.1:
             increment = 0.05  # minimum increment
         self.clean += increment
+        self.energy += 1 
         if self.clean >= 100:
             self.clean = 100
         self.clean_cooldown += 5
-        
+        if self.clean_cooldown > 100:
+            self.clean_cooldown = 100
+        self.cap_stats()
     def pet_died(self):
         print(f"{self.name} has died.")
         animation_switch = "laying"  # Dead or very sick
@@ -240,23 +243,45 @@ class virtual_pet:
             return
         
 
-        if self.hunger > 0:
-            self.hunger -= random.randint(1, 5)
-        if self.moodSlider > 0 and (self.hunger < 30 or self.energy < 20):
-            self.moodSlider -= random.randint(1, 5 )
-            if self.moodSlider < 0:
-                self.moodSlider = 0
+       
+        self.hunger -= random.randint(1, 5)
+        self.clean -= random.randint(1, 5)
+        self.energy -= random.randint(1, 5)
+        if self.hunger > 80:
+            self.moodSlider += random.randint(1, 5)
+            self.health += random.randint(1, 3)
+            self.energy += random.randint(1, 3)
+        if self.clean > 80:
+            self.moodSlider += random.randint(1, 5)
+            self.health += random.randint(1, 3)
+            self.energy += random.randint(1, 3)
+        if self.energy > 80:
+            self.moodSlider += random.randint(1, 5)
+            self.health += random.randint(1, 3)
+        if self.clean > 80:
+            self.moodSlider += random.randint(1, 5)
+            
+        if (self.hunger < 30 or self.energy < 20):
+            self.moodSlider -= random.randint(1, 5)
 
         if self.energy > 0 and self.hunger < 30:
             self.energy -= random.randint(1, 5)
         if self.hunger < 30:
             self.mood = "Hungry"
+            self.moodSlider -= random.randint(1, 3)  # Decrease mood if hungry
+            self.health -= random.randint(1, 3) + (100 - self.hunger)//20  # Decrease health if hungry
         elif self.moodSlider < 25:
             self.mood = "Sad"
+            self.energy -= random.randint(1, 3)  # Decrease energy if sad
+            self.health -= random.randint(1, 3) + (100 - self.moodSlider)//20  # Decrease health if sad
         elif self.energy < 20:
             self.mood = "Tired"
+            self.clean -= random.randint(1, 3)  # Decrease clean if tired
+            self.health -= random.randint(1, 3)  # Decrease health if tired
         elif self.clean < 15:
             self.mood = "Dirty"
+            self.moodSlider -= 5 + (100 - self.clean)//20  # Decrease mood if dirty
+            self.health -= 1 + (100 - self.clean)//30  # Decrease health if dirty
         else:
             self.mood = "Happy"
 

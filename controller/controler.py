@@ -10,17 +10,19 @@ import threading
 class PetController:
     def __init__(self, pet_model):
         self.pet = pet_model
-        self.buttons = {
-           # "feed": self.create_button(os.path.join("model","icons", "Monster Part", "Bone.png"), (10, 250)),
-            "clean": self.create_button(os.path.join("model","icons", "pixel", "scrub_brush.png"), (190, 300)),
-            "explore": self.create_button(os.path.join("model","icons","Misc","Map.png"), (250, 300)),
-            "keyboard": self.create_button(os.path.join("model","icons", "toolbar", "keyboard.png"), (10, 300)),
-            "bag": self.create_button(os.path.join("model","icons", "Equipment", "Bag.png"), (310, 300))
-        }
+        
         self.cleaning_active = False
         self.clean_icon = pygame.image.load(os.path.join("model","icons", "pixel", "scrub_brush.png")).convert_alpha()
         self.clean_tick = 0;
         self.isInventoryOpen = False
+    def update_button_positions(self, window_width, window_height):
+        """Update button positions dynamically based on window dimensions."""
+        self.buttons = {
+            "keyboard": self.create_button(os.path.join("model", "icons", "toolbar", "keyboard.png"), (10, window_height - 60 )),
+            "clean": self.create_button(os.path.join("model", "icons", "pixel", "scrub_brush.png"), (window_width - 60, window_height - 60 )),
+            "explore": self.create_button(os.path.join("model", "icons", "Misc", "Map.png"), (window_width - 120, window_height - 60 )),
+            "bag": self.create_button(os.path.join("model", "icons", "Equipment", "Bag.png"), (window_width - 180, window_height - 60 ))
+        }
         
     def setView(self, view):
         self.view = view
@@ -66,7 +68,7 @@ class PetController:
                     if self.clean_tick > 20:  # Adjust threshold as needed
                         self.pet.clean_pet()
                         self.clean_tick = 0  # Reset tick after cleaning
-            elif self.cleaning_active and self.pet.clean_cooldown >= 100:
+            elif (self.cleaning_active and self.pet.clean_cooldown >= 100) or not self.pet.petIsAlive:
                 self.cleaning_active = False
                 self.pet.change_activity("idle")
                 pygame.mouse.set_visible(True)
@@ -105,6 +107,10 @@ class PetController:
                         explore_thread.start()
             if event.type == pygame.MOUSEWHEEL and self.isInventoryOpen:
                 self.view.inventory_scroll -= event.y
+        if not self.pet.petIsAlive and self.cleaning_active:
+            self.cleaning_active = False
+            self.pet.change_activity("idle")
+            pygame.mouse.set_visible(True)
 
         return None
 

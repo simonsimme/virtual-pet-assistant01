@@ -94,20 +94,8 @@ class view:
         row3_y = 135
         for i, surf in enumerate(row3_surfs):
             screen.blit(surf, (row3_x + i * (surf.get_width() + 24), row3_y))
-        
 
-        # Draw button with modern look
-        for button_name, (button_img, button_rect) in self.controller.buttons.items():
-            # Draw button background
-            btn_rect = button_rect.inflate(12, 12)
-            self.draw_rounded_rect(screen, (146, 179, 240), btn_rect, radius=14, shadow=True)
-            screen.blit(button_img, button_rect)
-            # Show cleaning cooldown over the clean button
-            if button_name == "clean" and hasattr(self.pet, "clean_cooldown") and self.pet.clean_cooldown > 0:
-                font = pygame.font.SysFont('Segoe UI', 16, bold=True)
-                cooldown_text = font.render(f"{int(self.pet.clean_cooldown)}", True, (255, 50, 50))
-                text_rect = cooldown_text.get_rect(center=(button_rect.centerx, button_rect.top - 12))
-                screen.blit(cooldown_text, text_rect)
+        
             
         #btn_rect = self.controller.button_rect.inflate(12, 12)
        # self.draw_rounded_rect(screen, (146, 179, 240), btn_rect, radius=14, shadow=True)
@@ -175,7 +163,26 @@ class view:
             pygame.draw.rect(screen, (180, 180, 220), input_rect, 2)
             input_surf = font.render(self.chat_input, True, (0, 0, 0))
             screen.blit(input_surf, (input_rect.x + 5, input_rect.y + 5))
-            
+        
+            self.controller.update_button_positions(self.window_width, self.window_height - panel_height)
+        else:
+            self.controller.update_button_positions(self.window_width, self.window_height)
+
+        # Draw button with modern look
+        for button_name, (button_img, button_rect) in self.controller.buttons.items():
+            # Draw button background
+            btn_rect = button_rect.inflate(12, 12)
+            self.draw_rounded_rect(screen, (146, 179, 240), btn_rect, radius=14, shadow=True)
+            screen.blit(button_img, button_rect)
+           
+                
+            # Show cleaning cooldown over the clean button
+            if button_name == "clean" and hasattr(self.pet, "clean_cooldown") and self.pet.clean_cooldown > 0:
+                font = pygame.font.SysFont('Segoe UI', 16, bold=True)
+                cooldown_text = font.render(f"{int(self.pet.clean_cooldown)}", True, (255, 50, 50))
+                text_rect = cooldown_text.get_rect(center=(button_rect.centerx, button_rect.top - 12))
+                screen.blit(cooldown_text, text_rect)
+        
             
         
         if self.controller.isInventoryOpen:
