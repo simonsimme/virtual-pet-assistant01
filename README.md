@@ -3,6 +3,14 @@
 ## 📖 Overview
 The **Virtual Pet Assistant** is an interactive application that simulates a virtual pet experience. It combines gameplay elements with productivity features, such as scheduling tasks and reminders, making it both entertaining and functional.
 
+As you care for your pet, you can manage its hunger, mood, energy, cleanliness, and health. The application includes various activities like feeding, cleaning, exploring, and playing with your pet. It also features dynamic animations that reflect your pet's state and activities.
+
+This assistant can also help you manage your tasks and events by integrating with Google Calendar and Google Tasks. You can control the assistant using voice commands or a chat interface, making it easy to interact with your virtual pet.
+
+With local LLM integration, the assistant can provide intelligent responses and suggestions, without the need for an internet connection.
+
+Pick the name and appearance of your pet, and enjoy a personalized experience. 
+
 ---
 
 ## ✨ Features
@@ -19,16 +27,6 @@ The **Virtual Pet Assistant** is an interactive application that simulates a vir
 - 🎵 **Focus Mode**: Turns on focus music for productivity.
 
 ---
-## Installation
--
-## Usage
--
-## 🗂️ Code Structure
-- main.py: Entry point for the application.
-- model/: Contains core logic for pet behavior, Google API integration, and state management.
-- view/: Handles the graphical user interface and animations.
-- controller/: Manages user input and interactions.
-- assets/: Includes pet animations and icons.
 ## 🛠️ Technologies Used
 - Python: Core programming language.
 - Pygame: For GUI and animations.
@@ -36,6 +34,26 @@ The **Virtual Pet Assistant** is an interactive application that simulates a vir
 - SpeechRecognition: For voice commands.
 - OpenCV: For webcam functionality.
 - Ollama: LLM api integration, LLM used is Mistral 7B.
+---
+## 🎮 Game Introduction
+---
+## Installation
+-
+
+---
+## Usage
+-
+---
+## 🗂️ Code Structure
+- main.py: Entry point for the application.
+- model/: Contains core logic for pet behavior, Google API integration, and state management.
+- view/: Handles the graphical user interface and animations.
+- controller/: Manages user input and interactions.
+- assets/: Includes pet animations and icons.
+---
+
 ## 🚧 Future Improvements
+
+---
 ## 🔒 License
 This project is proprietary and not open-source. All rights are reserved. You may not copy, modify, distribute, or use this project without explicit permission from the author.
