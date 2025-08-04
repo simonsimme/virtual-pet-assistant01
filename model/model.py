@@ -21,6 +21,14 @@ import logging
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
+def get_resource_path(relative_path):
+    """Get the absolute path to a resource, works for dev and PyInstaller."""
+    if getattr(sys, 'frozen', False):  # Check if running as a PyInstaller bundle
+        base_path = sys._MEIPASS
+    else:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
 def run_game():
     while True:
         try:
@@ -28,7 +36,7 @@ def run_game():
             pygame.init()
             pygame.display.set_caption("Virtual Pet Assistant")
             pygame.display.set_icon(pygame.image.load(
-                os.path.join("model", "idle animation", "sprite0.png")))
+                get_resource_path("model/idle animation/sprite0.png")))
             windowwidth, windowheight = 400, 400
             screen = pygame.display.set_mode((windowwidth, windowheight), pygame.RESIZABLE)
             clock = pygame.time.Clock()
@@ -65,7 +73,7 @@ def run_game():
             speech_thread = stopable_thread.StoppableThread(target=speech_assistant.run, daemon=True)
             speech_thread.start()
 
-            update_interval = 6000  # 10 minutes in milliseconds
+            update_interval = 600000  # 10 minutes in milliseconds
             
             update_timer = 0
             update_activity_interval = 15000
@@ -231,7 +239,7 @@ def start_screen(screen, cat_options):
     cat_images = []
     for cat in cat_options:
         cat_nr = cat["id"]
-        sprite_path = f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Sitting.png"
+        sprite_path = get_resource_path(f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Sitting.png")
         try:
             sprite_sheet = pygame.image.load(sprite_path).convert_alpha()
             cat_images.append(sprite_sheet)

@@ -19,6 +19,8 @@ class view:
         self.inventory_scroll = 0
         self.inventory_item_rects = []
         self.event_text = []
+        
+        
     
     def window_resize(self, new_width, new_height):
         """Resize the window and update the view."""
@@ -31,6 +33,43 @@ class view:
         center_x = (self.window_width - displayed_width) // 2
         center_y = (self.window_height - displayed_height) // 2
         return center_x, center_y
+    
+        
+    def draw_quick_commands_popup(self, screen):
+        """Draw the quick commands popup."""
+        if not self.controller.infoOpen:
+            return
+
+        
+        commands = [
+            "!add event, title, date",
+            "!take selfie",
+            "!add todo, title, notes, due date",
+            "!create document, title -:- content",
+            "!list tasks"
+        ]
+        popup_width, popup_height = 300, 250
+        popup_x = (self.window_width - popup_width) // 2
+        popup_y = (self.window_height - popup_height) // 2
+        popup_rect = pygame.Rect(popup_x, popup_y, popup_width, popup_height)
+        
+        pygame.draw.rect(screen, (240, 248, 255), popup_rect, border_radius=10)  # Light blue background
+        pygame.draw.rect(screen, (173, 216, 230), popup_rect, 2, border_radius=10)  # Light blue border
+
+        title_font = pygame.font.SysFont('Segoe UI', 24, bold=True)
+        title_surf = title_font.render("Quick Commands", True, (40, 60, 120))
+        title_rect = title_surf.get_rect(center=(popup_x + popup_width // 2, popup_y + 30))
+        screen.blit(title_surf, title_rect)
+
+        # Draw command list
+        command_font = pygame.font.SysFont('Segoe UI', 16)
+        y = popup_y + 70
+        for command in commands:
+            command_surf = command_font.render(command, True, (50, 50, 80))
+            screen.blit(command_surf, (popup_x + 10, y))
+            y += 30
+            
+
         
 
     def draw_rounded_rect(self, surface, color, rect, radius=15, shadow=False):
@@ -184,7 +223,9 @@ class view:
                 screen.blit(cooldown_text, text_rect)
         
             
-        
+        if self.controller.infoOpen:
+            self.draw_quick_commands_popup(screen)
+            
         if self.controller.isInventoryOpen:
             # Backpack panel settings
             inv_panel_width = 220

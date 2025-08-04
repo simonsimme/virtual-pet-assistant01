@@ -2,8 +2,17 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 import pickle
 import os
+import sys
 
 SCOPES = ['https://www.googleapis.com/auth/tasks']
+
+def get_resource_path(relative_path):
+        """Get the absolute path to a resource, works for dev and PyInstaller."""
+        if getattr(sys, 'frozen', False):  # Check if running as a PyInstaller bundle
+            base_path = sys._MEIPASS
+        else:
+            base_path = os.path.abspath(".")
+        return os.path.join(base_path, relative_path)
 
 def get_tasks_service():
     creds = None
@@ -12,7 +21,7 @@ def get_tasks_service():
             creds = pickle.load(token)
     if not creds or not creds.valid:
         flow = InstalledAppFlow.from_client_secrets_file(
-            os.path.join(os.path.dirname(__file__), 'credentials.json'), SCOPES)
+            get_resource_path('model/credentials.json'), SCOPES)
         creds = flow.run_local_server(port=0)
         with open('token_tasks.pickle', 'wb') as token:
             pickle.dump(creds, token)

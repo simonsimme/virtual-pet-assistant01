@@ -5,8 +5,17 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 import pickle
+import sys
 
 SCOPES = ['https://www.googleapis.com/auth/calendar.events']
+
+def get_resource_path(relative_path):
+        """Get the absolute path to a resource, works for dev and PyInstaller."""
+        if getattr(sys, 'frozen', False):  # Check if running as a PyInstaller bundle
+            base_path = sys._MEIPASS
+        else:
+            base_path = os.path.abspath(".")
+        return os.path.join(base_path, relative_path)
 
 def add_event(summary, start_time, end_time):
     creds = None

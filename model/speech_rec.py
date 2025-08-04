@@ -12,8 +12,9 @@ from view.view import view
 from .ollama import LLM
 import random
 import playsound as ps
-# Load spaCy English model (download with: python -m spacy download en_core_web_sm)
-nlp = spacy.load("en_core_web_sm")
+import sys
+import re
+
 
 class SpeechAssistant:
     def say(self, text):
@@ -102,41 +103,58 @@ class SpeechAssistant:
            #print(f"Microphone error: {e}")
         return ""
 
-    def extract_event_info(self, command):
-        # Remove trigger words
-        for trigger in ["add event", "schedule event"]:
-            if trigger in command:
-                command = command.replace(trigger, "")
-        doc = nlp(command)
-        ents = [ent for ent in doc.ents if ent.label_ in ("DATE", "TIME")]
-        if ents:
-            # Find the first group of consecutive DATE/TIME entities
-            start_idx = ents[0].start
-            end_idx = ents[0].end
-            for i in range(1, len(ents)):
-                if ents[i].start == end_idx:
-                    end_idx = ents[i].end
-                else:
-                    break
-            date_phrase = doc[start_idx:end_idx].text
-            event_time = dateparser.parse(date_phrase)
-            # The title is everything after the date phrase
-            title = doc[end_idx:].text.strip()
-            if not title:
-                # fallback: everything except date_phrase
-                title = command.replace(date_phrase, "").strip()
-        else:
-            event_time = datetime.datetime.now() + datetime.timedelta(minutes=1)
-            title = command.strip()
-        return title, event_time
-
     
+
+    def check_quick_commands(self, user_command):
+        #quick commands: add event, take selfie. add todo, create document
+        #format: 
+        # !add event, title, date
+        # !take selfie 
+        # !add todo, title, notes, due date
+        # !create document, title -:- content
+        # !list tasks
+        command = self.extract_user_command(user_command)
+        if command is None or command[0] != "!":
+            return False
+        print("Quick command detected")
+        command = command[1:]  # Remove the '!' prefix
+
+        parts = command.split(",")
+        response = ",".join(part.strip() for part in parts[1:])
+        if parts[0] == "add event":
+            self.handle_code(100, response)
+        elif parts[0] == "take selfie":
+            self.handle_code(106, "")
+        elif parts[0] == "add todo":
+            self.handle_code(103, response)
+        elif parts[0] == "create document":
+            self.handle_code(102, response)
+        elif parts[0] == "list tasks":
+            self.handle_code(104, "")
+        else:
+            self.say("Unknown command. Please try again.")
+        return True
+    def extract_user_command(self, input_string):
+        """Extract the new user command from the input string."""
+        match = re.search(r"NEW USER COMMAND \[(.*?)\]", input_string)
+        if match:
+            return match.group(1)  # Extract the content inside the brackets
+        return None  # Return None if no match is found
+
     def handle_response_text(self, user_command):
-                response = self.llm.ask_ollama( "TODAYS DAY AND TIME FOR THE USER: ["+ datetime.datetime.now().isoformat() + "]" + user_command)
-                code = int(response[:5].replace("[", "").replace("]", ""))
-                response = response[5:]
-                print("LLM Response:", response)
-                print(f"Code: {code}")
+        
+            
+        if self.check_quick_commands(user_command):
+            return
+        response = self.llm.ask_ollama( "TODAYS DAY AND TIME FOR THE USER: ["+ datetime.datetime.now().isoformat() + "]" + user_command)
+        code = int(response[:5].replace("[", "").replace("]", ""))
+        response = response[5:]
+        print("LLM Response:", response)
+        print(f"Code: {code}")
+        self.handle_code(code, response)
+
+    def handle_code(self, code, response):
+        
                 if code == 100:
                     # Extract event info from the full command
                     parts = response.split(",")
@@ -233,103 +251,13 @@ class SpeechAssistant:
         if self.mic is None:
             print("Microphone not initialized. Please check your setup.")
             return
-        continue_running = False
         while True and not self.stop_flag:
             if not self.game_view.isChatopen and self.listen_for_wake_word():
                 user_command = self.listen_for_command()
-                response = self.llm.ask_ollama(user_command)
+                response = self.llm.ask_ollama( "TODAYS DAY AND TIME FOR THE USER: ["+ datetime.datetime.now().isoformat() + "]" + user_command)
                 code = int(response[:5].replace("[", "").replace("]", ""))
                 response = response[5:]
                 print("LLM Response:", response)
                 
-                if code == 100:
-                    # Extract event info from the full command
-                    parts = response.split(",")
-                    title = parts[0].strip() if len(parts) > 0 else ""
-                    if len(parts) == 2 and "T" in parts[1]:
-                        # Handle ISO 8601 combined date and time
-                        dt = dateparser.parse(parts[1].strip())
-                        date_str = dt.strftime("%Y-%m-%d") if dt else ""
-                        time_str = dt.strftime("%H:%M") if dt else ""
-                    else:
-                        date_str = parts[1].strip() if len(parts) > 1 else ""
-                        time_str = parts[2].strip() if len(parts) > 2 else ""
-                    start = dateparser.parse(f"{date_str} {time_str}")
-                    
-                    if title == "EMPTY":
-                        self.say("Could not extract event title. Please try again.")
-                        continue
-                    if "EMPTY" == start:
-                        self.say("Could not understand the date/time.")
-                        continue
-                    end = start + datetime.timedelta(minutes=30)
-                    self.say(f"does this sound right? '{title}' at {start.strftime('%Y-%m-%d %H:%M')}")
-                    user_confirmation = self.listen_for_command()
-                    if "yes" in user_confirmation or "sure" in user_confirmation or "okay" in user_confirmation or "yep" in user_confirmation:
-                        add_event(title, start.isoformat(), end.isoformat())
-                        self.say("Event scheduled!")
-                    else:
-                        self.say("Event scheduling canceled.")
-                elif 101 == code:
-                    self.say("Exiting.")
-                    break
-                elif code == 102:
-                    title = response.split("-:-")[0]
-                    content = response.split("-:-")[1]
-                    googledochelper.create_and_write_doc(title, content)
-                    self.say(f"Document '{title}' made")
-                elif 103 == code:
-                    task_title = response.split(",")[0]
-                    notes = response.split(",")[1]
-                    due_date = response.split(",")[2]
-                    
-                    if due_date.lower() == "EMPTY":
-                        due_date = None
-                    else:
-                        try:
-                            due_date = dateparser.parse(due_date).isoformat()
-                        except Exception as e:
-                            self.say("Invalid date format. Task will be added without a due date.")
-                            due_date = None
-                    service = googleToDo.get_tasks_service()
-                    task_lists = service.tasklists().list().execute()
-                    default_list_id = task_lists['items'][0]['id']
-                    googleToDo.add_task(service, default_list_id, title, notes, due_date)
-                    self.say(f"Task '{title}' added to your to-do list.")
-                elif 104 == code:
-                    self.say("Listing your tasks.")
-                    service = googleToDo.get_tasks_service()
-                    task_lists = service.tasklists().list().execute()
-                    default_list_id = task_lists['items'][0]['id']
-                    tasks = googleToDo.list_tasks(service, default_list_id)
-                    for task in tasks:
-                        self.say(task['title'])
-                elif 105 == code:
-                    task_title = response
-                    service = googleToDo.get_tasks_service()
-                    task_lists = service.tasklists().list().execute()
-                    default_list_id = task_lists['items'][0]['id']
-                    tasks = googleToDo.list_tasks(service, default_list_id)
-                    task_found = False
-                    for task in tasks:
-                        if task['title'].lower() == task_title.lower():
-                            googleToDo.complete_task(service, default_list_id, task['id'])
-                            self.say(f"Task '{task_title}' marked as completed.")
-                            task_found = True
-                            break
-                    if not task_found:
-                        self.say(f"Task '{task_title}' not found.")
-                elif 106 == code:
-                    self.say("Taking selfie.")
-                    camera = Camera()
-                    frame = camera.take_selfie()
-                    self.game_view.show_frame(frame, self.screen)
-                elif 108 == code:
-                    self.say("sorry, i didn't understand that")
-                elif 109 == code:
-                    self.say(response)
-                elif 110 == code:
-                    self.say("Focus mode activated. I will minimize distractions.")
-                    ps.playsound("audio/focusApe.mp3")
-                    #TODO: Implement focus mode logic
+                self.handle_code(code, response)
                    

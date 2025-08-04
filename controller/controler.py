@@ -12,17 +12,27 @@ class PetController:
         self.pet = pet_model
         
         self.cleaning_active = False
-        self.clean_icon = pygame.image.load(os.path.join("model","icons", "pixel", "scrub_brush.png")).convert_alpha()
+        self.clean_icon = pygame.image.load(self.get_resource_path("model/icons/pixel/scrub_brush.png")).convert_alpha()
         self.clean_tick = 0;
         self.isInventoryOpen = False
+        self.infoOpen = False
     def update_button_positions(self, window_width, window_height):
         """Update button positions dynamically based on window dimensions."""
         self.buttons = {
-            "keyboard": self.create_button(os.path.join("model", "icons", "toolbar", "keyboard.png"), (10, window_height - 60 )),
-            "clean": self.create_button(os.path.join("model", "icons", "pixel", "scrub_brush.png"), (window_width - 60, window_height - 60 )),
-            "explore": self.create_button(os.path.join("model", "icons", "Misc", "Map.png"), (window_width - 120, window_height - 60 )),
-            "bag": self.create_button(os.path.join("model", "icons", "Equipment", "Bag.png"), (window_width - 180, window_height - 60 ))
+            "keyboard": self.create_button(self.get_resource_path("model/icons/toolbar/keyboard.png"), (10, window_height - 60 )),
+            "clean": self.create_button(self.get_resource_path("model/icons/pixel/scrub_brush.png"), (window_width - 60, window_height - 60 )),
+            "explore": self.create_button(self.get_resource_path("model/icons/Misc/Map.png"), (window_width - 120, window_height - 60 )),
+            "bag": self.create_button(self.get_resource_path("model/icons/Equipment/Bag.png"), (window_width - 180, window_height - 60 )),
+            "info": self.create_button(self.get_resource_path("model/icons/toolbar/info.png"), (70, window_height - 60 )),
         }
+    @staticmethod
+    def get_resource_path(relative_path):
+        """Get the absolute path to a resource, works for dev and PyInstaller."""
+        if getattr(sys, 'frozen', False):  # Check if running as a PyInstaller bundle
+            base_path = sys._MEIPASS
+        else:
+            base_path = os.path.abspath(".")
+        return os.path.join(base_path, relative_path)
         
     def setView(self, view):
         self.view = view
@@ -105,6 +115,9 @@ class PetController:
                         self.pet.change_activity("explore")
                         explore_thread = threading.Thread(target=self.pet.start_explore, daemon=True)
                         explore_thread.start()
+                elif event.button == 1 and self.buttons["info"][1].collidepoint(event.pos):
+                    self.infoOpen = not self.infoOpen
+                    
             if event.type == pygame.MOUSEWHEEL and self.isInventoryOpen:
                 self.view.inventory_scroll -= event.y
         if not self.pet.petIsAlive and self.cleaning_active:

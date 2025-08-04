@@ -3,3 +3,5 @@ token.pickle
 token_tasks.pickle
 age_highscore.txt
 savegame.json
+build/
+dist/

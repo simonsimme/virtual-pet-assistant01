@@ -45,8 +45,8 @@ listen to music (pet dances, boosts mood)
 -loading screen when restarting
 -stat balance -
 -stat testing -
--LLM testing
--View overhaul
+-LLM testing 
+-View overhaul 
 -readme
 -done
 

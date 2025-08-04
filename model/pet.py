@@ -4,18 +4,19 @@ import random
 import time
 import pygame
 import os
+import sys
 from . import save_load
 
 class virtual_pet:
     def __init__(self, name, cat_nr=5, game_view=None, god_mode=False):
         self.name = name
-        self.hunger = 100 # random.randint(30,60) # 0 starving, 100 full
+        self.hunger =  random.randint(30,60) # 0 starving, 100 full
         self.mood = "Happy"
-        self.moodSlider = 100#random.randint(60,80) # 0 sad, 100 happy
-        self.energy = 100 # random.randint(30,70) # 0 exhausted, 100 energized
+        self.moodSlider = random.randint(60,80) # 0 sad, 100 happy
+        self.energy = random.randint(30,70) # 0 exhausted, 100 energized
         self.age = 0
-        self.health = 100 # random.randint(60, 100)  # 0 dead, 100 healthy
-        self.clean = 100 # random.randint(3, 40)  # 0 dirty, 100 clean
+        self.health = random.randint(60, 100)  # 0 dead, 100 healthy
+        self.clean = random.randint(3, 40)  # 0 dirty, 100 clean
         self.clean_cooldown = 0
         self.tasks = []
         self.birth_date = time.strftime("%Y-%m-%d")
@@ -43,18 +44,27 @@ class virtual_pet:
         self.god_mode = god_mode
         
        # Load all animations using cat_nr
-        self.load_animation("walk", f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Walk.png", frame_size , 8)
-        self.load_animation("stretch", f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Stretching.png", frame_size , 13)
-        self.load_animation("run", f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Run.png", frame_size , 8)
-        self.load_animation("sleep1", f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Sleeping1.png", frame_size , 1)
-        self.load_animation("sleep2", f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Sleeping2.png", frame_size , 1)
-        self.load_animation("sit", f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Sitting.png", frame_size , 1)
-        self.load_animation("meow", f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Meow.png", frame_size , 4)
-        self.load_animation("lick", f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Licking 1.png", frame_size , 5)
-        self.load_animation("lick2", f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Licking 2.png", frame_size , 5)
-        self.load_animation("itch", f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Itch.png", frame_size , 2)
-        self.load_animation("laying", f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Laying.png", frame_size , 8)
-        
+        self.load_animation("walk", self.get_resource_path(f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Walk.png"), frame_size, 8)
+        self.load_animation("stretch", self.get_resource_path(f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Stretching.png"), frame_size, 13)
+        self.load_animation("run", self.get_resource_path(f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Run.png"), frame_size, 8)
+        self.load_animation("sleep1", self.get_resource_path(f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Sleeping1.png"), frame_size, 1)
+        self.load_animation("sleep2", self.get_resource_path(f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Sleeping2.png"), frame_size, 1)
+        self.load_animation("sit", self.get_resource_path(f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Sitting.png"), frame_size, 1)
+        self.load_animation("meow", self.get_resource_path(f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Meow.png"), frame_size, 4)
+        self.load_animation("lick", self.get_resource_path(f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Licking 1.png"), frame_size, 5)
+        self.load_animation("lick2", self.get_resource_path(f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Licking 2.png"), frame_size, 5)
+        self.load_animation("itch", self.get_resource_path(f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Itch.png"), frame_size, 2)
+        self.load_animation("laying", self.get_resource_path(f"model/assets/Pet Cats Pack/Cat-{cat_nr}/Cat-{cat_nr}-Laying.png"), frame_size, 8)
+
+    @staticmethod
+    def get_resource_path(relative_path):
+        """Get the absolute path to a resource, works for dev and PyInstaller."""
+        if getattr(sys, 'frozen', False):  # Check if running as a PyInstaller bundle
+            base_path = sys._MEIPASS
+        else:
+            base_path = os.path.abspath(".")
+        return os.path.join(base_path, relative_path)
+
     def set_game_view(self, game_view):
         """Set the game view for the pet."""
         self.view = game_view
@@ -313,7 +323,7 @@ class virtual_pet:
         if self.energy < 10 or self.hunger < 10:
             print(f"{self.name} is too tired or hungry to explore.")
             return
-        item_chance = 50 #percent chance to find an item
+        item_chance = 10 #percent chance to find an item
         while self.current_activity == "explore":
             if random.randint(1, 100) <= item_chance:
                 found_item = random.choice(list(world_items().food_items.values()))
