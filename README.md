@@ -38,7 +38,9 @@ Pick the name and appearance of your pet, and enjoy a personalized experience.
 ## 🎮 Game Introduction
 ---
 ## Installation
--
+- Download ollama, www.ollama.com 
+- Download the git project
+- Runfile located in dist folder, in this folder run main.exe
 
 ---
 ## Usage
