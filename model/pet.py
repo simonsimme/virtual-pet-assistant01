@@ -323,7 +323,7 @@ class virtual_pet:
         if self.energy < 10 or self.hunger < 10:
             print(f"{self.name} is too tired or hungry to explore.")
             return
-        item_chance = 10 #percent chance to find an item
+        item_chance = 2 #percent chance to find an item
         while self.current_activity == "explore":
             if random.randint(1, 100) <= item_chance:
                 found_item = random.choice(list(world_items().food_items.values()))

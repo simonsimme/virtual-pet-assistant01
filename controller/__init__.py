@@ -1,2 +1,2 @@
-from .cameraController import *
-from .controler import *
+from .cameraController import Camera
+from .controler import PetController
