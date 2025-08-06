@@ -33,7 +33,7 @@ Pick the name and appearance of your pet, and enjoy a personalized experience.
 - Google APIs: Integration with Calendar, Tasks, and Docs.
 - SpeechRecognition: For voice commands.
 - OpenCV: For webcam functionality.
-- Ollama: LLM api integration, LLM used is Mistral 7B.
+- Ollama: LLM api integration, LLM used is Mistral instruct.
 ---
 
 ## Installation
@@ -45,7 +45,8 @@ Pick the name and appearance of your pet, and enjoy a personalized experience.
 ## Usage
 - Run main.exe in the dist folder
 ## LLM Usage
--
+- the mic is always on, the speech recognition is listening for you to say "Hey" + (name of your pet), the command line will print out what the recognition heard
+- The LLM uses local computing capabilities, so the response time will vary depending on your computer. For older computers, response time can be up to 5 minutes. If you have too low memory for mistral its possible to change what LLM model is being used, but not recommended.
 ---
 
 ## 🎮 Game Introduction
