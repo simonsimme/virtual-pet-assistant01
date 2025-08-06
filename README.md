@@ -46,21 +46,57 @@ Pick the name and appearance of your pet, and enjoy a personalized experience.
 - Run main.exe in the dist folder
 ## LLM Usage
 - the mic is always on, the speech recognition is listening for you to say "Hey" + (name of your pet), the command line will print out what the recognition heard
-- The LLM uses local computing capabilities, so the response time will vary depending on your computer. For older computers, response time can be up to 5 minutes. If you have too low memory for mistral its possible to change what LLM model is being used, but not recommended. It's changeable in the ollama.py script.
+- The LLM uses local computing capabilities, so the response time will vary depending on your computer. For older computers, response time can be up to 5 minutes. If you have too low memory for Mistral, it's possible to change what LLM model is being used, but not recommended. It's changeable in the ollama.py script.
 - It's also possible to chat with the LLM by clicking on the keyboard button.
 ---
 
-## 🎮 Game Introduction
-- Start by selecting your virtual cat and giving it a name. Be careful of what name you choose, as that name is used when needing to start a dialog with the LLM and is voice-activated
-- <img width="1915" height="812" alt="Skärmbild 2025-08-06 102122" src="https://github.com/user-attachments/assets/50e71448-f730-4145-8a5a-63ee0318db26" />
-- Your virtual pet will grow over time, but to keep it alive, you need to make sure its stats don't get too low. The keyboard button is to access the LLM chat instead of voice recognition, and the info icon contains a list of commands that don't go to the LLM for quicker latency.
-- <img width="521" height="555" alt="Skärmbild 2025-08-05 145433" src="https://github.com/user-attachments/assets/9cd8108a-2285-4132-86f4-3286c6f4439c" />
-- You clean the cat by pressing the brush and then holding mouse 1 and dragging across the pet, the red text over the brush button is the brush cooldown
--<img width="1121" height="841" alt="Skärmbild 2025-08-05 145654" src="https://github.com/user-attachments/assets/ba877fdd-c55c-41fe-955e-0759b74238a8" />
-- To acquire food, you will need to let your cat explore. Do this by pressing the map button. The food it finds will be placed in the inventory accessible from the bag button.
--<img width="1125" height="838" alt="Skärmbild 2025-08-05 145559" src="https://github.com/user-attachments/assets/3bc3cef9-a994-4c88-bf91-22df54884d2c" />
 
-- If your pet dies, the age will be saved as the high score and will allow you to remake your pet and try again.
+## 🎮 Welcome to Your Virtual Cat Companion (Game Introduction)
+
+Start by selecting your **virtual cat** and giving it a name.  
+> ⚠️ This name is voice-activated and used when interacting with the AI — choose wisely!
+
+![Cat Selection](https://github.com/user-attachments/assets/50e71448-f730-4145-8a5a-63ee0318db26)
+
+---
+
+### 🧼 Caring for Your Pet
+
+- Keep your cat's **stats from getting too low** to help it grow and survive.
+- To **clean** your cat, press the **🧽 brush button**, then **hold mouse 1 and drag across the cat**.
+- A **red text** above the brush shows the **cooldown timer**.
+
+![Cleaning](https://github.com/user-attachments/assets/ba877fdd-c55c-41fe-955e-0759b74238a8)
+
+---
+
+### 🧭 Exploring & Feeding
+
+- Press the **🗺️ map button** to send your cat out exploring.
+- It may return with **food**, which is stored in your **🎒 inventory** (accessed via the **bag icon**).
+
+![Exploring](https://github.com/user-attachments/assets/3bc3cef9-a994-4c88-bf91-22df54884d2c)
+
+---
+
+### 💬 Chatting with Your Cat
+
+- Use **voice commands** to talk to your cat.
+- You can also use the **⌨️ keyboard button** to access the AI chat manually.
+- Tap the **ℹ️ info icon** for a quick list of non-AI commands (faster and lower latency).
+
+![Chat UI](https://github.com/user-attachments/assets/9cd8108a-2285-4132-86f4-3286c6f4439c)
+
+---
+
+### 💀 Game Over & High Score
+
+If your pet dies, its **age will be saved as a high score**.  
+You can then **create a new cat** and try to beat your previous record!
+
+---
+
+
 
 
 
