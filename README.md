@@ -7,7 +7,7 @@ As you care for your pet, you can manage its hunger, mood, energy, cleanliness, 
 
 This assistant can also help you manage your tasks and events by integrating with Google Calendar and Google Tasks. You can control the assistant using voice commands or a chat interface, making it easy to interact with your virtual pet.
 
-With local LLM integration, the assistant can provide intelligent responses and suggestions, without the need for an internet connection.
+With local LLM integration, the assistant can provide intelligent responses and suggestions without the need for an internet connection.
 
 Pick the name and appearance of your pet, and enjoy a personalized experience. 
 
@@ -46,7 +46,8 @@ Pick the name and appearance of your pet, and enjoy a personalized experience.
 - Run main.exe in the dist folder
 ## LLM Usage
 - the mic is always on, the speech recognition is listening for you to say "Hey" + (name of your pet), the command line will print out what the recognition heard
-- The LLM uses local computing capabilities, so the response time will vary depending on your computer. For older computers, response time can be up to 5 minutes. If you have too low memory for mistral its possible to change what LLM model is being used, but not recommended.
+- The LLM uses local computing capabilities, so the response time will vary depending on your computer. For older computers, response time can be up to 5 minutes. If you have too low memory for mistral its possible to change what LLM model is being used, but not recommended. It's changeable in the ollama.py script.
+- It's also possible to chat with the LLM by clicking on the keyboard button.
 ---
 
 ## 🎮 Game Introduction
