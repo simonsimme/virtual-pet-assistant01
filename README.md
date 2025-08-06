@@ -95,14 +95,6 @@ If your pet dies, its **age will be saved as a high score**.
 You can then **create a new cat** and try to beat your previous record!
 
 ---
-
-
-
-
-
-
-
----
 ## 🗂️ Code Structure
 - main.py: Entry point for the application.
 - model/: Contains core logic for pet behavior, Google API integration, and state management.
